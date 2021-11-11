@@ -1,0 +1,1734 @@
+////
+NO CAMBIAR!!
+Codificación, idioma, tabla de contenidos, tipo de documento
+////
+:encoding: utf-8
+:lang: es
+:toc: right
+:toc-title: Tabla de contenidos
+:doctype: book
+:imagesdir: ./images
+:linkattrs:
+:toclevels: 4
+////
+Nombre y título del trabajo
+////
+# Testing
+Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería
+
+image::logocloudstic.png[]
+
+// NO CAMBIAR!! (Entrar en modo no numerado de apartados)
+:numbered!: 
+
+
+[abstract]
+== Resumen
+////
+COLOCA A CONTINUACION EL RESUMEN
+////
+
+
+////
+COLOCA A CONTINUACION LOS OBJETIVOS
+////
+.Objetivos
+* xxx
+
+[TIP]
+====
+Disponible los repositorios usados en este tutorial.
+
+* https://github.com/ualmtorres/fizzbuzz[Fizz Buzz]
+====
+
+// Entrar en modo numerado de apartados
+:numbered:
+
+## Introducción
+
+* Proceso necesario en cualquier proyecto software serio.
+* Un test es un código que comprueba tu código. Hacen tener más confianza en la aplicación. Previenen arreglar una cosa sin romper otra. Queremos que ni nuestro yo del futuro ni otras personas rompan el código que hemos escrito hoy.
+* La automatización de tests facilita la repetición de tests o suites de test de forma rápida y sencilla durante el desarrollo.
+* Da un feedback inmediato a los desarrolladores.
+* Facilita la refactorización chequeando el funcionamiento correcto del código refactorizado.
+* Permite la reproducción de casos complejos (fallos a ciertas horas, desde ciertos sitios, ...)
+* Uso de sistemas de CI que permiten la creación de pipelines que permiten la ejecución automatizada de tests, creación del build, despliegue automatizado o manual, ...
+
+* Tipos de testing
+** Tests unitarios. Son código que ayuda a asegurar que las partes de las aplicaciones funcionan de la forma esperada. La unidad testada puede ser una función, una clase, un módulo. Deben ser independientes unos de otros. Para una entrada, el test unitario comprueba el resultado. No contactan con el mundo exterior
+** Tests de integración. Comprobamos la integración de nuestro sistema con algo de infraestructura (p.e. bases de datos, archivos, E/S, ...). Hacen llamadas a servicios externos.
+** Tests end to end. Simulan condiciones reales. Se ejecutarían en un navegador (o similar). Simulan a un usuario en la aplicación (escribiendo, haciendo clics, ...)
+
+image::piramide-testing.png[]
+
+La pirámide de tests, además de representar el coste y la velocidad de ejecucuión de los tests, también refleja que deberíamos escribir más tests de los simples (unitarios) y menos tests de los complejos (end-to-end).
+
+[TIP]
+====
+El código de los tests tiene que ser fácil de mantener y tiene que centrarse en el resultado del método probado. Después de crear un test nos debemos preguntar lo siguiente: si un día se refactoriza el método probado (sin cambiar su resultado), ¿tendré que cambiar el test? Si la respuesta es sí, hay que modificar el test. Posiblemente en el test nos estemos centrando en detalles del proceso que no deberían de estar en el test.
+====
+
+* NestJS ayuda para que el proceso sea menos tedioso.
+** Scaffolding para tests en la aplicación.
+** Integracion con https://github.com/facebook/jest[Jest] (desarrollado por Facebook y se usa con "cero configuración") y https://github.com/visionmedia/supertest[Supertest] (para testing de peticiones HTTP). No obstante, se puede usar cualquier otro framework de testing.
+** Uso del sistema de inyección de dependencias de NestJS para facilitar el uso de mocks.
+** Jest configurado en `package.json` determinando mediante expresiones regulares los archivos que se consideran tests (p.e. para que las pruebas estuviesen en cualquier archivo `.spec.ts` usaríamos `"testRegex": ".*\\.spec\\.ts$"`).
+
+## Hola mundo
+
+Crearemos un proyecto de ejemplo para la https://kata-log.rocks/fizz-buzz-kata[kata Fizz Buzz].
+
+[source, bash]
+----
+$ nest new fizzbuzz
+----
+
+Al crear un proyecto nuevo, NestJS instala las dependencias para testing y crea una suite de pruebas con un test de ejemplo para probar que la llamada a `/` devuelve `Hello World!`.
+
+Comenzamos probando el código de ejemplo creado por NestJS.
+
+[source, bash]
+----
+$ cd fizzbuzz
+$ npm run test
+----
+
+[source, bash]
+----
+El resultado es el siguiente y nos informa que se han pasado los tests con éxito.
+
+ PASS  src/app.controller.spec.ts
+  AppController
+    root
+      ✓ should return "Hello World!" (14 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        4.162 s
+Ran all test suites.
+----
+
+### La función `it`
+
+* Tests implementados en funciones `it` o `test`. 
+* Toma 3 argumentos (nombre del test, función con las expectativas y timeout, este último opcional). El timeout predeterminado es de 5 segundos.
+
++
+[source, ts]
+----
+it('should return "Hello World!"', () => { <1>
+  expect(appController.getHello()).toBe('Hello World!'); <2>
+});
+----
+<1> El usar `it` en lugar de `test`, sumado a usar el nombre del test en condicional, hace el test más legible: `it should return "Hello World!`.
+<2> `expect` se usar para comprobar un valor obtenido por una https://jestjs.io/docs/expect[función matcher], como `toBe`.
+
+### Agrupación de tests
+
+Para tener un código de testing más limpio y organizado se pueden incluir los tests (`it`) en la función `describe`. Esto genera un bloque formado por varios tests. Además, los bloques `describe` se pueden anidar
+
+[source, ts]
+----
+  describe('root', () => {
+    it('should return "Hello World!"', () => {
+      expect(appController.getHello()).toBe('Hello World!');
+    });
+  });
+----
+
+## Tests unitarios
+
+### La kata Fizz Buzz
+
+Haremos los tests unitarios usando la https://kata-log.rocks/fizz-buzz-kata[kata Fizz Buzz]. Seguiremos estos pasos:
+
+. Crearemos un nuevo módulo, servicio y controlador para la kata.
+
++
+[source, bash]
+----
+nest g module fizzbuzz
+nest g service fizzbuzz
+nest g controller fizzbuzz
+----
+
+. _El servicio_. Crearemos un nuevo método en `fizzbuzz/fizzbuzz.service.ts` denominado `fizzbuzz` que aceptará un argumento de tipo `number`.
+
++
+[source, typescript]
+----
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class FizzbuzzService { <1>
+  fizzbuzz(number): any {
+    if (number < 1 || number > 100) {
+      return;
+    }
+
+    if (number % 15 === 0) {
+      return 'FizzBuzz';
+    }
+
+    if (number % 3 === 0) {
+      return 'Fizz';
+    }
+
+    if (number % 5 === 0) {
+      return 'Buzz';
+    }
+
+    return number;
+  }
+}
+----
+<1> Método que implementa la kata Fizz Buzz
+
+. _El controlador_. Crearemos un endpoint en `fizzbuzz/fizzbuzz.controller.ts` que acepte un número como parámetro. Este endpoint llamará al método del servicio del paso anterior.
+
++
+[source, ts]
+----
+import { Controller, Get, Param } from '@nestjs/common';
+import { FizzbuzzService } from './fizzbuzz.service';
+
+@Controller('fizzbuzz')
+export class FizzbuzzController {
+  constructor(private fizzbuzzService: FizzbuzzService) {}
+
+  @Get(':number') <1>
+  fizzbuzz(@Param('number') number): any {
+    return this.fizzbuzzService.fizzbuzz(number);
+  }
+}
+
+----
+<1> Nueva ruta para la kata Fizz Buzz
+
+. _Los tests_. Añadiremos los tests en el grupo `describe` existente en `fizzbuzz/fizzbuzz.service.spec.ts`
+
++
+[source,ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { FizzbuzzService } from './fizzbuzz.service';
+
+describe('FizzbuzzService', () => { <1>
+  let service: FizzbuzzService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [FizzbuzzService],
+    }).compile();
+
+    service = module.get<FizzbuzzService>(FizzbuzzService);
+  });
+
+  it('should be defined', () => { <2>
+    expect(service).toBeDefined();
+  });
+
+  it('should return Fizz when the number is multiple of 3', () => { <3>
+    expect(service.fizzbuzz(3)).toBe('Fizz'); <4>
+  });
+
+  it('should return Buzz when the number is multiple of 5', () => {
+    expect(service.fizzbuzz(5)).toBe('Buzz');
+  });
+
+  it('should return FizzBuzz when the number is multiple of 15', () => {
+    expect(service.fizzbuzz(15)).toBe('FizzBuzz');
+  });
+
+  it('should return the number when then number is neither multiple of 3, 5 nor 15', () => {
+    expect(service.fizzbuzz(2)).toBe(2);
+  });
+
+  it('should return nothing when the number is not between 1 and 100', () => { <5>
+    expect(service.fizzbuzz(0)).toBe(undefined);
+    expect(service.fizzbuzz(101)).toBe(undefined);
+  });
+});
+
+----
+<1> Grupo de tests creados inicialmente por NestJS a modo de ejemplo para el servicio Fizzbuzz
+<2> Test inicial creado por NestJS
+<3> Cada test va en su `it` (o `test`) y contiene un texto (realmente es el nombre del test) que permite entender claramente la intención del test.
+<4> Por un lado indicamos lo que queremos probar y por otro el valor esperado.
+<5> En este caso, quizá sería más apropiado crear dos tests para probar cada uno los límites del rango no permitido (i.e. un test para comprobar que no se aceptn menores que 1 y otro test para comprobar que no se aceptan mayores que 100).
+
+. **Añadir el servicio de Fizz Buzz al archivo de testing del controlador.** Este paso es muy importante porque NestJS no añade el servicio de Fizz Buzz al archivo de testing del controlador. Tenemos dos opciones: añadir el servicio en el elemento `providers` o cargar directamente el módulo que definimos al principio, y que ya incorporaba el controlador y el servicio. Esta última será la opción que utilizaremos aquí y que se muestra en el listado de `fizzbuzz/fizzbuzz.controller.spec.ts`.
+
++
+[source, typescript]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { FizzbuzzController } from './fizzbuzz.controller';
+import { FizzbuzzModule } from './fizzbuzz.module';
+
+describe('FizzbuzzController', () => {
+  let controller: FizzbuzzController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [FizzbuzzModule], <1>
+      //controllers: [FizzbuzzController], <2>
+    }).compile();
+
+    controller = module.get<FizzbuzzController>(FizzbuzzController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+----
+<1> Módulo añadido para incluir controlador y servicio en el test
+<2> Declaración insuficiente (ahora comentada) inicial en la que sólo se especificaba el controlador y no el servicio.
+
+
+Ejecutaremos los tests con `npm run test`. Este será su resultado:
+
+[source, bash]
+----
+ PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+ PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
+ PASS  src/app.controller.spec.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
+Snapshots:   0 total
+Time:        2.63 s, estimated 3 s
+Ran all test suites.
+----
+
+[CAUTION]
+====
+Si no hubiésemos añadido el servicio o el módulo (que incluye controlador y servicio) en `fizzbuzz/fizzbuzz.controller.spec.ts`, habríamos obtenido el siguiente error al ejecutar `npm run test`:
+
+[source, bash]
+----
+...
+FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts     
+
+● FizzbuzzController › should be defined
+    Nest cant resolve dependencies of the FizzbuzzController (?). Please make sure that the argument FizzbuzzService at index [0] is available in the RootTestModule context.
+
+    Potential solutions:
+    - If FizzbuzzService is a provider, is it part of the current RootTestModule?
+    - If FizzbuzzService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing FizzbuzzService */ ]
+      })
+...
+----
+Esto es una señal de que falta por incluir un servicio en la lista de servicios, bien del módulo, o a nivel de aplicación en `app.module.ts`. En aras de una mejor organización, optaremos por organizar los controladores y servicios en módulos.
+====
+
+.Mostrar los datos de cada test
+****
+De forma predeterminada, los resultados de ejecución de los tests se muestran de forma agregada, perdiéndose los datos de cada test. Esto en ocasiones puede ser útil. Para activarlo, basta con cambiar en `package.json` la entrada en `scripts` sustituyendo `"test": "jest",` por `"test": "jest --verbose",`. 
+
+[source, json]
+----
+....
+   "scripts": {
+    ....
+    "test": "jest --verbose", <1>
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    ....
+----
+<1> Cambio realizado para mostrar los datos de cada test.
+
+De esta forma, ahora el resultado al ejecutar `npm run test` será más detallada como se muestra a continuación:
+
+[source, typescript]
+----
+ PASS  src/app.controller.spec.ts
+  AppController
+    root
+      ✓ should return "Hello World!" (14 ms)
+
+ PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+  FizzbuzzController
+    ✓ should be defined (26 ms)
+
+ PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
+  FizzbuzzService
+    ✓ should be defined (21 ms)
+    ✓ should return Fizz when the number is multiple of 3 (2 ms)
+    ✓ should return Buzz when the number is multiple of 5 (2 ms)
+    ✓ should return FizzBuzz when the number is multiple of 15 (2 ms)
+    ✓ should return the number when then number is neither multiple of 3, 5 nor 15 (2 ms)
+    ✓ should return nothing when the number is not between 1 and 100 (2 ms)
+
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
+Snapshots:   0 total
+Time:        2.575 s, estimated 3 s
+----
+
+****
+## Cobertura de tests
+
+Una medida muy interesante nos la da la cobertura de tests, que ofrece el porcentaje de código que está incluido en los tests. Esto es muy útil porque nos ayuda a dirigir los esfuerzos para crear tests de código que está oculto a los tests y que puede ser una potencial fuente de errores.
+
+Podemos conocer la cobertura de nuestros tests con:
+
+[source, bash]
+----
+$ npm run test:cov
+----
+
+Esto, además de ejecutar los tests unitarios nos dará el porcentaje de código testado para cada archivo y a nivel global.
+
+[source, bash]
+----
+ PASS  src/app.controller.spec.ts
+  AppController
+    root
+      ✓ should return "Hello World!" (11 ms)
+    Fizzbuzz
+      ✓ should return FizzBuzz when the number is multiple of 15 (3 ms)
+      ✓ should return Fizz when the number is multiple of 3 (2 ms)
+      ✓ should return Buzz when the number is multiple of 5 (2 ms)
+      ✓ should return the number when then number is neither multiple of 3, 5 nor 15 (2 ms)
+      ✓ should return nothing when the number is not between 1 and 100 (2 ms)
+
+
+File               % Stmts % Branch  % Funcs % Lines Uncovered Lines 
+All files            68.57      100    83.33   68.97                
+ app.controller.ts     100      100      100     100                   
+ app.module.ts           0      100      100       0    1-10              
+ app.service.ts        100      100      100     100                    
+ main.ts                 0      100        0       0    1-8              
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        3.188 s, estimated 4 s
+----
+
+Como resultado también se genera una carpeta `coverage/lcov-coverage` con ese mismo informe, pero en HTML. 
+
+image::coverage100.png[]
+
+Si ahora modificamos los tests y comentamos uno de ellos, por ejemplo el que probaba los múltiplos de 15, y volvemos a ejecutar la cobertura de tests con `npm run test:cov` veremos que la cobertura de `app.service.ts` ha bajado.
+
+image::coverageParcial.png[]
+
+Si ahora hacemos clic sobre `app.service.ts` en el informe, nos llevará al archivo y nos dirá las líneas de código que no están tratadas (cubiertas) en ningún test.
+
+image::codigoNoProbado.png[]
+
+Si anulamos los comentarios del test y volvemos a ejecutar la cobertura de tests todo volverá a estar como antes y ese código ya estará de nuevo cubierto por los tests.
+
+## Tests de integración
+
+En backend los utilizaremos para testear repositorios. Si hemos seguido el principio de Inversión de dependencias tendremos por un lado una interface con una serie de métodos (p.e. la interface `UserRepository` con los métodos `save` y `find`. Por otro lado, tendremos un conjunto de clases repositorio particulares (p.e. MySQLUserRepository) que implementan esa interface.
+
+* Test unitarios: `npm run test`. Se centra en los módulos y en las clases. El ejemplo básico incorporado comprueba que la llamada al controlador devuelve `Hello World!`.
+* Test end-to-end: `npm run test:e2e`. Se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto automatizaremos la prueba de cada endpoint de la API. Nest usará Supertest para simular las llamadas HTTP.
+
+.¿Hace falta probarlo todo?
+****
+* Decidimos qué probar. Alguien podría decir de probarlo todo con una cobertura cercana al 100%.
+* No es necesario. Sólo hay que probar las partes más críticas. Puede que esté entre el 70%-90%
+* Probaremos
+** Servicios (si hay `app.service.ts` también)
+** Controladores (si hay `app.controller.ts` también)
+* No hace falta probar DTOs, constantes, entidades y módulos.
+
+****
+
+### BDD
+
+* npm install jest-cucumber --save-dev
+* Crear un archivo `tests/jest-bdd.json` con este contenido
+
++
+[souce, json]
+----
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testMatch": [
+    "**/*.steps.ts"
+  ],
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}
+----
+
+* En la configuración de jest de package.json: 
+
++
+[source, json]
+----
+...
+  "jest": {
+    ...
+    "testRegex": [".*\\.spec\\.ts$", ".*\\.steps\\.ts$"], <1>
+...
+----
+<1> Modificamos la expresión regular para que también tome los `*.steps.ts`
+
+* En la configuración scripts de package.json
+
++
+[source, bash]
+----
+...
+  "scripts": {
+    ...
+    "test:bdd": "jest --config ./test/jest-bdd.json" <1>
+----
+<1> Creamos una nueva entrada para ejecutar sólo los tests BDD
+
+* Definición de la feature y escenario en test/features/hello.feature
+
++
+[source,txt]
+----
+Feature: Logging in
+
+    Scenario: Entering a correct password
+        Given I have previously created a password
+        When I enter my password correctly
+        Then I should be granted access
+----
+
+* Código base de los pasos del test
+
++
+[source, ts]
+----
+// logging-in.steps.js
+
+import { defineFeature, loadFeature } from 'jest-cucumber';
+
+const feature = loadFeature('test/features/hello.feature'); <1>
+
+defineFeature(feature, (test) => { <2>
+  test('Entering a correct password', ({ given, when, then }) => {
+    given('I have previously created a password', () => {});
+
+    when('I enter my password correctly', () => {});
+
+    then('I should be granted access', () => {});
+  });
+});
+----
+<1> Referencia al archivo de la especificación Gherkin
+<2> Código generado automáticamente (Ver nota de información)
+
+[TIP]
+====
+Instalando en Visual Studio Code la extensión `Jest-cucumber code generator` se activa una opción en el menú emergente que se activa al seleccionar un escenario completo de un archivo `.feature`.
+====
+
+[NOTE]
+====
+Otras extesiones interesantes para Visual Studio Code:
+
+* Cucumber (Gherkin) Full Support
+* Snippets and Syntax Highlight for Gherkin (Cucumber)
+====
+
+* Para ejecutar todos los tests (unitarios y BDD): `npm test`
+* Para ejecutar sólo los tests BDD: `npm run test:bdd`
+
+Enlace: https://github.com/bencompton/jest-cucumber#readme
+
+
+## Caso de uso. Catálogo de productos
+
+Para ilustrar los tests unitarios y de integración en este tutorial, así como el testing de contoladores, servicios y uso de mocks, vamos a desarrollar un caso de uso sobre un API para un catálogo ficticio de productos. La API ofrecerá los endpoints para las operaciones básicas de crear un producto, obtener el listado de productos, obtener un producto a partir de su id, modificar y eliminar un producto.
+
+Para no complicar demasiado el ejemplo pero que también dé juego, de cada producto se guarda:
+
+* id: numérico
+* name: string
+* brand: string
+* category: string
+* price: numérico
+* url: string
+
+Partimos de un https://github.com/ualmtorres/testing-product-catalog/tree/base[proyecto creado] y disponible en GitHub (rama `base`). Para más información sobre cómo crear y configurar el proyecto de este caso de uso consultar el <<Anexo. Configuración inicial del proyecto>>
+
+[NOTE]
+====
+Para clonar la rama `base`, clonar el repositorio con este comando
+
+[source, bash]
+----
+$ git clone -b base https://github.com/ualmtorres/testing-product-catalog/tree/base
+----
+====
+
+
+.Configuración de un servidor MySQL
+****
+Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que complicarnos con instalaciones y no acoplar el desarrollo a nuestro equipo utilizaremos una imagen Docker de MySQL 5.7. Crearemos una base de datos denominada tutorial. Usaremos las cuenta `root` con el password `secret`
+
+[source, bash]
+----
+$ docker run --name testing_mysql -e MYSQL_ROOT_PASSWORD=secret -p 3306:3306 -d mysql:5.7 <1>
+----
+<1> Usaremos el password `secret` para la cuenta `root`
+
+Tras unos instantes (algo más si la imagen de MySQL 5.7 no está descargada en el equipo) habrá un contenedor en ejecución con el nombre `testing_mysql`. Iniciaremos una sesión interactiva para crear una base de datos, a la que denominaremos tutorial
+
+[source, bash]
+----
+$ docker exec -it testing_mysql bash
+root@d0512407a21d:/# mysql -u root -p
+Enter password: <1>
+...
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+mysql> create database testing; <2>
+Query OK, 1 row affected (0.00 sec)
+----
+<1> Introducir el password `secret`
+<2> Crear la base de datos `testing`
+****
+
+### Primeros tests
+
+Comenzamos lanzando los tests sobre el proyecto creado con el comando siguiente
+
+[source, bash]
+----
+$ npm run test
+----
+
+Tras unos instantes comprobamos que se han ejecutado tres suites de tests, pero sólo uno se ha ejecutado con éxito, el de `src/app.controller.spec.ts`. Sin embargo, ni los tests del servicio (`src/product/product.service.spec.ts`) ni el del controlador (`src/product/product.controller.spec.ts`) han tenido éxito. En ambos casos nos indica que no están definido su _provider_.
+
+A continuación veremos cómo resolver estos problemas y lo haremos desde el controlador hacia adentro. Primero haremos los tests del controlador y después el del servicio. Finalmente, dedicaremos una sección a realizar los tests de integración.
+
+### Tests del controlador
+
+Los tests del controlador fallan porque mientras que en el arranque de la aplicación se cargan los módulos correctamente, al ejecutar los tests se utiliza módulos diferentes de los del entorno de ejecución. Y lo importante, **inicialmente esos módulos no pueden resolver sus dependencias.**. Concretamente, lo que está ocurriendo es que el controlador no puede resolver en el entorno de pruebas su dependencia de `ProductService`
+
+[source, ts]
+----
+...
+@Controller('product')
+export class ProductController {
+  constructor(private readonly productService: ProductService) {} <1>
+...
+----
+<1> Dependencia respecto a `ProductService`
+
+En el código siguiente del test del controlador vemos que dentro de `beforeEach` se usa la clase `Test` y un método `createTestingModule`. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. `imports`, `providers`, `controllers` ...). Tras definir el nuevo módulo (el de testing) y llamar al método `compile` se crea el módulo con sus dependencias similar a los módulos creados para el entorno de ejecución.
+
+Archivo `src/product/product.controller.spec.ts`
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { ProductController } from './product.controller';
+import { ProductService } from './product.service';
+
+describe('ProductController', () => {
+  let controller: ProductController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({ <1>
+      controllers: [ProductController], 
+      providers: [ProductService], <2>
+    }).compile();
+
+    controller = module.get<ProductController>(ProductController); <3>
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+----
+<1> Definición del módulo para el testing del controlador
+<2> Servicio a utilizar
+<3> Creación de una instancia del controller
+
+#### Primer paso. Evitar que falle el test
+
+Seguiremos un enfoque progresivo para conseguir que nuestros tests funcionen. Se trata de ayudar a que en primer lugar desaparezcan los errores de las pruebas del controlador. Posteriormente, se irán refinando los tests.
+
+El test del controlador falla porque el controlador no es capaz de resolver sus dependencias. Lo que haremos es sustituir el servicio original por un servicio de uso exclusivo en testing. Con esto, conseguiremos probar únicamente el controlador, aislándolo del servicio, que es la premisa de los tests unitarios: probar sólo una cosa en cada test.
+
+Pasos:
+
+. Crearemos un objeto `mockProductService` que sustituya (_mockee_) al servicio. Inicialmente `mockProductService` estará vacío. Posteriormente le iremos añadiendo los métodos falseados (_mockeados_).
+. Construir un módulo de testing que reemplace el servicio original del producto por el mockeado que hemos creado en el paso anterior.
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { ProductController } from './product.controller';
+import { ProductService } from './product.service';
+
+describe('ProductController', () => {
+  let controller: ProductController;
+  let mockProductService = {}; <1>
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [ProductController],
+      providers: [ProductService],
+    })
+      .overrideProvider(ProductService) <2>
+      .useValue(mockProductService) <3>
+      .compile(); <4>
+
+    controller = module.get<ProductController>(ProductController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+----
+<1> Mock del servicio. Inicialmente vacío para pasar el test
+<2> Servicio que se va a sustituir (mockear)
+<3> Servicio que sustituye (mockea) al original
+<4> Construcción del módulo para testing
+
+Lanzaremos ahora los tests, pero nos ceñiremos sólo a los tests del controlador y además lo haremos en modo `watch`. Así, cada vez que hagamos cambios sobre el código se volverán a ejecutar los tests.
+
+[source, ts]
+----
+$ npm run test:watch
+----
+
+Pulsaremos `p` para indicar que sólo se pasen los tests a los archivos que sigan un patrón concreto de nombre de archivo. Introduciremos `product.controller` como patrón. Con esto, se pasarán los tests sólo al controlador y obtendremos un resultado como el siguiente:
+
+[source, bash]
+----
+ PASS  src/product/product.controller.spec.ts
+  ProductController
+    ✓ should be defined (12 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        4.756 s, estimated 6 s
+Ran all test suites matching /product.controller/i.
+
+Watch Usage: Press w to show more.
+----
+
+#### Segundo paso. Añadir tests
+
+Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del servicio, vamos a ir creando tests del controlador. Comenzaremos por el de creación de productos añadiendo este test después del test `should be defined`. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un id (da igual el que sea) y el resto de campos coincidirán con los del DTO de creación de producto.
+
+[source, ts]
+----
+...
+  it('should create a product', () => {
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    expect(controller.create(createProductDto)).toEqual({
+      id: expect.any(Number),
+      ...createProductDto,
+    });
+  });
+...
+----
+
+Tras guardar los cambios, como estamos en modo `watch` se volverán a pasar los tests y nos da un fallo: el método create no existe en el mock del servicio, tal y como se muestra a continuación:
+
+[source, ts]
+----
+ FAIL  src/product/product.controller.spec.ts
+  ProductController
+    ✓ should be defined (12 ms)
+    ✕ should create a product (4 ms) <1>
+
+  ● ProductController › should create a product
+
+    TypeError: this.productService.create is not a function <2>
+
+      18 |   @Post()
+      19 |   create(@Body() createProductDto: CreateProductDto) {
+    > 20 |     return this.productService.create(createProductDto); <3>
+         |  
+----
+<1> El test no pasa
+<2> El método `create` no existe en el mock del servicio (recordamos que estamos en el mockeado)
+<3> Línea en la que se provoca el error en el test
+
+El error se debe a que en la sección anterior creamos el mock del servicio del producto pero lo creamos vacío, sin ningún método. A continuación crearemos la implementación que mockea al método `create` del servicio. Se limitará a tomar un DTO y devolver un objeto con un `id` aleatorio y el DTO.
+
+Archivo `src/product/product.controller.spec.ts`
+[source, ts]
+----
+...
+describe('ProductController', () => {
+  let controller: ProductController;
+  let mockProductService = {
+    create: jest.fn((dto) => { <1>
+      return {
+        id: Math.random() * (1000 - 1) + 1, <2>
+        ...dto, <3>
+      };
+    }),
+  };
+...
+----
+<1> Método `create` mockeado. 
+<2> id aleatorio
+<3> Incorporar el DTO del objeto a crear
+
+Una vez realizados estos cambios, el test de crear un producto pasa correctamente.
+
+[source, bash]
+----
+ PASS  src/product/product.controller.spec.ts
+  ProductController
+    ✓ should be defined (15 ms)
+    ✓ should create a product (3 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        4.69 s
+----
+
+.Funciones de mock con `jest.fn()`
+****
+Las funciones de mock se usan para inyectar o falsear código durante los tests. 
+`jest.fn()` crea una función de mock y opcionalmente puede tomar una implementación como parámetro. 
+
+Las funciones de mock tienen la propiedad `mock` que permite, entre otros, conocer los argumentos con los que fue llamada, obtener las veces que fue llamada, y ver el valor de los argumentos en una llamada concreta, por ejemplo, en la tercera vez que fue llamada.
+
+También tiene métodos interesantes como los siguientes:
+
+* `mockReturnValue()`: Devuelve el valor que se pase como argumento
+* `mockResolvedValue()`: Devuelve el valor resuelto por una promesa
+* `mockImplementation()`: Acepta una función que es usada como implementación del mock
+* ...
+****
+
+A continuación añadiremos otro test. Por ejemplo, añadiremos el test para actualizar un producto. Comenzaremos creando el test en `src/product/product.controller.spec.ts`. Lo añadiremos a continuación de los otros tests definidos.
+
+[source, ts]
+----
+...
+  it('should update a product', () => {
+    const updateProductDto = { <1>
+      name: 'new-product',
+      brand: 'new-brand',
+      category: 'new-category',
+      price: 100,
+      url: 'http://product.com/the-new-product',
+    };
+    const productId = 2; <2>
+
+
+    expect(controller.update(productId, updateProductDto)).toEqual({ <3>
+      id: productId,
+      ...updateProductDto,
+    });
+  });
+...
+----
+<1> DTO con los cambios del producto
+<2> id del producto a modificar
+<3> Se espera que resulltado de actualizar el producto sea el producto con el id y los datos actualizados
+
+Tras guardar los cambios se volverán a pasar los tests y no pasará este test porque no está definido el método `update` en el mock del servicio.
+
+[source, bash]
+----
+ FAIL  src/product/product.controller.spec.ts
+  ProductController
+    ✓ should be defined (12 ms)
+    ✓ should create a product (4 ms)
+    ✕ should update a product (3 ms)
+
+  ● ProductController › should update a product
+
+    TypeError: this.productService.update is not a function
+----
+
+Para solucionar este problema añadiremos la función `update` a `mockProductService`. Con los cambios, quedará así
+
+[source, ts]
+----
+...
+describe('ProductController', () => {
+  let controller: ProductController;
+  let mockProductService = {
+    create: jest.fn((dto) => {
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    update: jest.fn((id, dto) => { <1>
+      return {
+        id: id,
+        ...dto,
+      };
+    }),
+  };
+...
+----
+<1> `update` devolverá el nuevo objeto modificado
+
+Tras los cambios, los tests volverán a pasar.
+
+[source, bash]
+----
+ PASS  src/product/product.controller.spec.ts
+  ProductController
+    ✓ should be defined (12 ms)
+    ✓ should create a product (4 ms)
+    ✓ should update a product (4 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        4.542 s, estimated 6 s
+----
+
+Por último, es posible introducir una mejora al test para comprobar que el servicio fue llamado con los argumentos correctos. Esta comprobación va dirigida a conocer si el controlador introduce alguna anomalía al llamar al servicio. Con esto, no sólo nos aseguramos que el controlador hace su trabajo y devuelve los datos correctos, sino que también comprobamos que internamente hace bien su trabajo.
+
+Tras los cambios el test quedaría así:
+
+[source, ts]
+----
+...
+  it('should update a product', () => {
+    const updateProductDto = {
+      name: 'new-product',
+      brand: 'new-brand',
+      category: 'new-category',
+      price: 100,
+      url: 'http://product.com/the-new-product',
+    };
+    const productId = 2;
+
+
+    expect(controller.update(productId, updateProductDto)).toEqual({
+      id: productId,
+      ...updateProductDto,
+    });
+
+    expect(mockProductService.update).toHaveBeenCalledWith(productId, updateProductDto); <1>
+  });
+...
+----
+<1> Comprobación de que el servicio ha sido llamado con los argumentos correctos por parte del controlador
+
+Al guardar, se volverán a pasar los tests y el cambio introducido funcionará correctamente, lo que permitirá validar que el controlador hace bien su trabajo.
+
+Ahora se trataría de ir añadiendo los tests que faltan. Para no extender el tutorial, se dejan fuera del tutorial.
+
+#### Tercer paso. Llevar el mock del servicio a una clase
+
+Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como sacar el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de `mockProductService` a sendos métodos en una clase nueva.
+
+Partimos del servicio mockeado en la propia clase y tenía esta forma:
+
+[source, typescript]
+----
+...
+  let mockProductService = {
+    create: jest.fn((dto) => { <1>
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    update: jest.fn((id, dto) => { <2>
+      return {
+        id: id,
+        ...dto,
+      };
+    }),
+  };
+...
+----
+
+Comenzamos generando la clase con el CLI de NestJS
+
+[source, bash]
+----
+$ nest g class product/ProductServiceMock --no-spec <1>
+----
+<1> Incluimos el parámetro `--no-spec` para que no cree el archivo de testing
+
+Esta clase estará inicialmente vacía:
+
+[source, ts]
+----
+export class ProductServiceMock {}
+----
+
+Crearemos dos métodos `create` y `update` en los que incluiremos en código de mocking que ya teníamos renombrando los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el servicio real.
+
+La clase que mockea al servicio ahora quedará así:
+
+[source, ts]
+----
+import { Product } from './entities/product.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+export class ProductServiceMock {
+  async create(createProductDto: CreateProductDto): Promise<Product> { <1>
+    return Promise.resolve({
+      id: Math.random() * (1000 - 1) + 1,
+      ...createProductDto,
+    });
+  }
+
+  async update( <2>
+    id: number,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
+    return Promise.resolve({
+      id: id,
+      ...updateProductDto,
+    });
+  }
+}
+----
+<1> Método `create` mockeado
+<2> Método `update` mockeado
+
+Una vez que disponemos de la clase que mockea el servicio, haremos los cambios en el archivo de tests del controlador para que use esta clase mockeada en lugar de la variable `mockProductService`, que es que la que contenía la implementación de los mocks. Hay que hacer varios cambios:
+
+. Declarar una variable `service` de tipo `ProductService
+. Definir un `ProductServiceProvider` que mockee el provider ProductService
+. Incorporar el `ProductServiceProvider` a la lista de providers del módulo de testing
+. Usar la clase de mock para construir el módulo de testing
+. Inicializar `service` al servicio del producto. Como `ProductService` está mockeado realmente no usará la implementación original
+. Cambiar los tests a asíncronos
+. Añadir `await` a las llamadas a los métodos del controlador
+. Usar espías de métodos si usamos métodos como `toHaveBeenCalledWith`
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { ProductController } from './product.controller';
+import { ProductService } from './product.service';
+import { ProductServiceMock } from './product-service-mock';
+
+describe('ProductController', () => {
+  let controller: ProductController;
+  let service: ProductService; <1>
+
+  beforeEach(async () => {
+    const ProductServiceProvider = { <2>
+      provide: ProductService,
+      useClass: ProductServiceMock,
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [ProductController],
+      providers: [ProductService, ProductServiceProvider], <3>
+    })
+      .overrideProvider(ProductService)
+      .useClass(ProductServiceMock) <4>
+      .compile();
+
+    controller = module.get<ProductController>(ProductController);
+    service = module.get<ProductService>(ProductService); <5>
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  it('should create a product', async () => { <6>
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    expect(await controller.create(createProductDto)).toEqual({ <7>
+      id: expect.any(Number),
+      ...createProductDto,
+    });
+  });
+
+  it('should update a product', async () => { <8>
+    const updateProductDto = {
+      name: 'new-product',
+      brand: 'new-brand',
+      category: 'new-category',
+      price: 100,
+      url: 'http://product.com/the-new-product',
+    };
+    const productId = 2;
+
+    expect(await controller.update(productId, updateProductDto)).toEqual({ <9>
+      id: productId,
+      ...updateProductDto,
+    });
+
+    const updateSpy = jest.spyOn(service, 'update'); <10>
+    controller.update(productId, updateProductDto); <11>
+
+    expect(updateSpy).toHaveBeenCalledWith(productId, updateProductDto); <12>
+    );
+  });
+});
+----
+<1> Declaración del servicio
+<2> `ProductServiceProvider` mockea el provider ProductService
+<3> Se añade `ProductServiceProvider` como otro provider
+<4> Inicialización del mock a la clase del mock del servicio
+<5> Inicialización del servicio al servicio del producto
+<6> Caso de prueba asíncrono por el `await` de métodos en el caso de prueba
+<7> Probamos que el producto se crea correctamente y devuelve los valores esperados. La ejecución se hace con `await`
+<8> Caso de prueba asíncrono por el `await` de métodos en el caso de prueba
+<9> Probamos que la actualización de un producto se realiza correctamente y devuelve los valores esperados. La ejecución se hace con `await`
+<10> Crear un espía para el método `update` en `service`
+<11> Hacer una actualización de producto 
+<12> Probamos que el servicio espiado ha sido llamado por el controlador con los parámetros adecuados
+
+### Tests del servicio
+
+Una vez creados los tests del controlador procederemos a realizar los tests del servicio. De forma análoga a como hicimos con el controlador, que mockeaba el servicio del que dependía, en los tests del servicio también mockearamos sus dependencias. En el caso del servicio se mockea el repositorio, que es su dependencia.
+
+Comenzamos lanzando los tests en modo `watch`, pero limitados al patrón `product.service` 
+
+[source, bash]
+----
+$ npm run test:watch
+----
+
+El resultado de los tests nos devolverá que no se pueden resolver las dependencias de `ProductService`. Esto se debe a que tiene una dependencia con el repositorio y no se puede resolver en el entorno de pruebas. 
+
+
+[source, ts]
+----
+...
+@Injectable()
+export class ProductService {
+  constructor(
+    @InjectRepository(Product) private productsRepository: Repository<Product>, <1>
+  ) {}
+...
+----
+<1> Dependencia respecto del repositorio
+
+De foma análoga a los tests del controlador, en el código siguiente del test del servicio vemos que dentro de `beforeEach` se usa la clase `Test` y un método `createTestingModule`. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. imports, providers, controllers …​). Tras definir el nuevo módulo (el de testing) y llamar al método compile se crea el módulo con sus dependencias similar a los módulos creados para el entorno de ejecución.
+
+
+Archivo `src/product/product.service.spec.ts`
+[source, ts]
+----
+...
+describe('ProductService', () => {
+  let service: ProductService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({ <1>
+      providers: [ProductService], <2>
+    }).compile();
+
+    service = module.get<ProductService>(ProductService); <3>
+  });
+...
+----
+<1> Definición del módulo para el testing del servicio
+<2> Provider del servicio 
+<3>	Creación de una instancia del servicio
+
+#### Primer paso. Evitar que falle el test
+
+Al igual que hicimos con el controlador, seguiremos un enfoque progresivo para conseguir que nuestros tests funcionen. Se trata de ayudar a que en primer lugar desaparezcan los errores de las pruebas del servicio. Posteriormente, se irán refinando los tests.
+
+El test del servicio falla porque el servicio no es capaz de resolver sus dependencias. Lo que haremos es sustituir el repositorio original por un repositorio de uso exclusivo en testing. Con esto, conseguiremos probar únicamente el servicio, aislándolo del repositorio, que es la premisa de los tests unitarios: probar sólo una cosa en cada test.
+
+Pasos:
+
+. Crearemos un objeto `mockProductsRepository` que sustituya (mockee) al repositorio. Inicialmente `mockProductsRepository` estará vacío. Posteriormente le iremos añadiendo los métodos falseados (mockeados).
+. Construir un módulo de testing que reemplace el repositorio original del producto por el mockeado que hemos creado en el paso anterior.
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { ProductService } from './product.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from './entities/product.entity';
+
+describe('ProductService', () => {
+  let service: ProductService;
+  let mockProductsRepository = {}; <1>
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ProductService,
+        { <2>
+          provide: getRepositoryToken(Product), <3>
+          useValue: mockProductsRepository, <4>
+        },
+      ],
+    }).compile(); <5>
+
+    service = module.get<ProductService>(ProductService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+----
+<1> Mock del repositorio. Inicialmente vacío para pasar el test
+<2> Nuevo provider 
+<3> Repositorio que se va a sustituir (mockear)
+<4> Repositorio que sustituye (mockea) al original
+<5> Construcción del módulo para testing
+	
+Tras guardar los cambios ahora vemos que ya pasan los tests.
+
+[source, bash]
+----
+ PASS  src/product/product.service.spec.ts (5.777 s)
+  ProductService
+    ✓ should be defined (12 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        6.522 s
+----
+
+#### Segundo paso. Añadir tests
+
+Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del repositorio, vamos a ir creando tests del servicio. Comenzaremos por el de creación de productos añadiendo este test después del test `should be defined`. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un id (da igual el que sea) y el resto de campos coincidirán con los del DTO de creación de producto.
+
+[source, ts]
+----
+...
+  it('should create a product', async () => {
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    expect(await service.create(createProductDto)).toEqual({
+      id: expect.any(Number),
+      ...createProductDto,
+    });
+  });
+...
+----
+
+Tras guardar los cambios, como estamos en modo `watch` se volverán a pasar los tests y nos da un fallo: el método `create` no existe en el mock del repositorio, tal y como se muestra a continuación:
+
+[source, bash]
+----
+ FAIL  src/product/product.service.spec.ts
+  ProductService
+    ✓ should be defined (11 ms)
+    ✕ should create a product (3 ms) <1>
+
+  ● ProductService › should create a product
+
+    TypeError: this.productsRepository.save is not a function <2>
+    
+      12 |   ) {}
+      13 |   async create(createProductDto: CreateProductDto): Promise<Product> {
+    > 14 |     return await this.productsRepository.save(createProductDto); <3>
+----
+<1> El test no pasa
+<2> El método `create` no existe en el mock del repositorio (recordamos que estamos en el mockeado)
+<3> Línea en la que se provoca el error en el test
+
+El error se debe a que en la sección anterior creamos el mock del repositorio del producto pero lo creamos vacío, sin ningún método. A continuación crearemos la implementación que mockea al método `create` del repositorio. Se limitará a tomar un DTO y devolver un objeto con un `id` aleatorio y el DTO.
+
+Archivo `src/product/product.service.spec.ts`
+
+[source, ts]
+----
+...
+describe('ProductService', () => {
+  let service: ProductService;
+  let mockProductsRepository = {
+    create: jest.fn().mockImplementation((dto) => { <1<
+      return {
+        id: Math.random() * (1000 - 1) + 1, <2>
+        ...dto, <3>
+      };
+    }),
+  };
+...
+----
+<1> Método create mockeado.
+<2> `id` aleatorio
+<3> Incorporar el DTO del objeto a crear
+
+Una vez realizados estos cambios, el test de crear un producto siguen sin pasar correctamente. Nos indica que el método `save` no está implementado en el mock del repositorio. Esto se debe a que hay una referencia explícita al método `save` en la implementación del método `create` en el servicio.
+
+[source, ts]
+----
+...
+  async create(createProductDto: CreateProductDto): Promise<Product> {
+    return await this.productsRepository.save(createProductDto); <1>
+  }
+...
+----
+<1> Referencia al método `save` del repositorio
+
+Por tanto, tendremos que añadir la implementación del método `save` al mock de repositorio, quedando de esta manera:
+
+[source, ts]
+----
+...
+describe('ProductService', () => {
+  let service: ProductService;
+  let mockProductsRepository = {
+    create: jest.fn().mockImplementation((dto) => {
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    save: jest.fn().mockImplementation((newProduct) => <1>
+      Promise.resolve({ <2>
+        id: Math.random() * (1000 - 1) + 1, <3>
+        ...newProduct, <4>
+      }),
+    ),
+  };
+...
+----
+<1> Método `save` mockeado.
+<2> El método devuelve una promesa resuelta
+<3> id aleatorio
+<4>	Incorporar el DTO del objeto a guardar
+ 
+Una vez realizados estos cambios, el test de crear un producto pasa correctamente.
+
+[source, bash]
+----
+ PASS  src/product/product.service.spec.ts
+  ProductService
+    ✓ should be defined (11 ms)
+    ✓ should create a product (4 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        4.233 s, estimated 6 s
+----
+
+Ahora se trataría de ir añadiendo los tests que faltan. Para no extender el tutorial, se dejan fuera del tutorial.
+
+#### Tercer paso. Llevar el mock del repositorio a una clase
+
+Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos como sacar el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de mockProductsRepository a sendos métodos en una clase nueva.
+
+Partimos del repositorio mockeado en la propia clase y tenía esta forma:
+
+[source, ts]
+----
+...
+  let mockProductsRepository = {
+    create: jest.fn().mockImplementation((dto) => {
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    save: jest.fn().mockImplementation((newProduct) => <1>
+      Promise.resolve({ <2>
+        id: Math.random() * (1000 - 1) + 1, <3>
+        ...newProduct, <4>
+      }),
+    ),
+  };
+...
+----
+<1> Método para crear productos
+<2> Método para guardar productos
+
+Comenzamos generando la clase con el CLI de NestJS
+
+[source, ts]
+----
+$ nest g class product/ProductRepositoryMock --no-spec <1>
+----
+<1> Incluimos el parámetro --no-spec para que no cree el archivo de testing
+
+Esta clase estará inicialmente vacía:
+
+[source,ts]
+----
+$ export class ProductRepositoryMock {}
+----
+
+Crearemos dos métodos `create` y `save` en los que incluiremos en código de mocking que ya teníamos renombrando los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hace el repositorio real.
+
+La clase que mockea al repositorio ahora quedará así:
+
+[source, typescript]
+----
+import { Product } from './entities/product.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+export class ProductRepositoryMock {
+  create(createProductDto: CreateProductDto): Promise<Product> {
+    return Promise.resolve({
+      id: Math.random() * (1000 - 1) + 1,
+      ...createProductDto,
+    });
+  }
+  save(product: Product): Promise<Product> {
+    return Promise.resolve({
+      id: Math.random() * (1000 - 1) + 1,
+      ...product,
+    });
+  }
+}
+----
+<1> Método `create` mockeado
+<2> Método `save` mockeado
+
+Una vez que disponemos de la clase que mockea el repositorio, haremos los cambios en el archivo de tests del servicio para que use esta clase mockeada en lugar de la variable `mockProductsRepository`, que es la que contenía la implementación de los mocks. Basta con:
+
+. Eliminar la variable `mockProductsRepository`
+. Usar la clase de mock para construir el módulo de testing
+ 
+La clase de testing quedaría así
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { ProductService } from './product.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from './entities/product.entity';
+import { ProductRepositoryMock } from './product-repository-mock';
+
+describe('ProductService', () => {
+  let service: ProductService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ProductService,
+        {
+          provide: getRepositoryToken(Product),
+          useClass: ProductRepositoryMock, <1>
+        },
+      ],
+    }).compile();
+
+    service = module.get<ProductService>(ProductService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  it('should create a product', async () => {
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    expect(await service.create(createProductDto)).toEqual({
+      id: expect.any(Number),
+      ...createProductDto,
+    });
+  });
+});
+----
+<1> Inicialización del mock a la clase del mock del repositorio
+
+:numbered!: 
+
+## Anexo I. Configuración inicial del proyecto
+
+Para crear ese proyecto recordamos los pasos de su creación. Generaremos también un _resource_ en NestJS para que nos cree el módulo, servicio, controlador, entidad y DTOs. También instalaremos las dependencias de Swagger y TypeORM para MySQL.
+
+[source, bash]
+----
+$ nest new testing-product-catalog
+$ cd testing-product-catalog
+$ nest g resource product <1>
+$ npm install --save @nestjs/swagger swagger-ui-express
+$ npm install --save typeorm mysql
+----
+<1> En _What transport layer do you use?_ seleccionamos `REST API` y en _Would you like to generate CRUD entry points?_ seleccionamos `Yes`
+
+### Creación de la entidad
+
+Archivo `product.entity.ts`
+[source, ts]
+----
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class Product {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  name: string;
+
+  @Column()
+  brand: string;
+
+  @Column()
+  category: string;
+
+  @Column()
+  price: number;
+
+  @Column()
+  url: string;
+}
+----
+
+### Configuración de TypeORM
+
+. Creación de archivo `ormconfig.json`. Este archivo se almacena en la raíz del proyecto, junto al `package.json`.
+
++
+[source, json]
+----
+{
+  "type": "mysql",
+  "host": "localhost",
+  "port": 3306,
+  "username": "root",
+  "password": "secret",
+  "database": "testing",
+  "entities": ["dist/**/*.entity.js"],
+  "synchronize": true
+}
+----
+
+. Configuración de TypeORM en `app.module.ts`
+
++
+[source, ts]
+----
+...
+@Module({
+  imports: [TypeOrmModule.forRoot(), ProductModule], <1>
+...
+----
+<1> El método `forRoot()` carga la configuración de TypeORM. Al no pasarle nada, la toma del archivo `ormconfig.json`
+
+. Registro de repositorio `Product` en `product/product.module.ts`
+
++
+[source, ts]
+----
+...
+@Module({
+  imports: [TypeOrmModule.forFeature([Product])],
+...
+----
+
+. Creación del constructor del servicio en `product/product.service.ts` para inyectar el repositorio de `Product`
+
++
+[source. ts]
+----
+...
+@Injectable()
+export class ProductService {
+  constructor(
+    @InjectRepository(Product) private productsRepository: Repository<Product>,
+  ) {}
+...
+----
+
+### Configuración de Swagger
+
+En `main.ts`
+
+[source,ts]
+----
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Configurar títulos de documnentación
+  const options = new DocumentBuilder()
+    .setTitle('Product catalog REST API')
+    .setDescription('API REST de Product catalog')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+
+  // La ruta en que se sirve la documentación
+  SwaggerModule.setup('docs', app, document);
+
+  await app.listen(3000);
+}
+bootstrap();
+----
+
+### DTOs
+
+DTO `product/dto/create-product.dto.ts`
+[source, ts]
+----
+export class CreateProductDto {
+import { ApiProperty } from '@nestjs/swagger';
+
+export class CreateProductDto {
+  @ApiProperty({ example: 'the-product' })
+  readonly name: string;
+
+  @ApiProperty({ example: 'the-brand' })
+  readonly brand: string;
+
+  @ApiProperty({ example: 'the-category' })
+  readonly category: string;
+
+  @ApiProperty({ example: 99 })
+  readonly price: number;
+
+  @ApiProperty({ example: 'http://product.com/the-product' })
+  readonly url: string;
+}
+
+}
+----
+
+DTO `product/dto/update-product.dto.ts`
+
+[source, ts]
+----
+import { CreateProductDto } from './create-product.dto';
+
+export class UpdateProductDto extends CreateProductDto {}
+----
+
+### Implementación de los métodos del servicio
+
+Archivo `product/product.service.ts`
+
+[source, ts]
+----
+import { Injectable } from '@nestjs/common';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Product } from './entities/product.entity';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class ProductService {
+  constructor(
+    @InjectRepository(Product) private productsRepository: Repository<Product>,
+  ) {}
+  async create(createProductDto: CreateProductDto): Promise<Product> {
+    return await this.productsRepository.save(createProductDto);
+  }
+
+  async findAll(): Promise<Product[]> {
+    return await this.productsRepository.find();
+  }
+
+  async findOne(id: number): Promise<Product> {
+    return await this.productsRepository.findOne(id);
+  }
+
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
+    let toUpdate = await this.productsRepository.findOne(id);
+    let updated = Object.assign(toUpdate, updateProductDto);
+
+    return await this.productsRepository.save(updated);
+  }
+
+  async remove(id: number): Promise<Product> {
+    let toRemove = await this.productsRepository.findOne(id);
+    let removedProducts = await this.productsRepository.remove(
+      new Array(toRemove),
+    );
+
+    return removedProducts[0];
+  }
+}
+
+----
+
+### Adaptación de los parámetros del controlador
+
+El CLI de NestJS genera los endpoints usando el `id` de tipo `string`. Sin embargo, como en la entidad `Product` hemos definido el `id` de tipo `number` hay que cambiar el tipo del parámetro `id` en los métodos del controlador.
+
+[source, ts]
+----
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { ProductService } from './product.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+
+@Controller('product')
+export class ProductController {
+  constructor(private readonly productService: ProductService) {}
+
+  @Post()
+  create(@Body() createProductDto: CreateProductDto) {
+    return this.productService.create(createProductDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.productService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.productService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: number, @Body() updateProductDto: UpdateProductDto) {
+    return this.productService.update(id, updateProductDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.productService.remove(id);
+  }
+}
+----
+
