@@ -13,7 +13,7 @@ Codificación, idioma, tabla de contenidos, tipo de documento
 ////
 Nombre y título del trabajo
 ////
-# Testing
+# Testing (tutorial en curso)
 Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería
 
 image::logocloudstic.png[]
@@ -33,13 +33,22 @@ COLOCA A CONTINUACION EL RESUMEN
 COLOCA A CONTINUACION LOS OBJETIVOS
 ////
 .Objetivos
-* xxx
+* Introducir el proceso de testing en backend.
+* Crear tests unitarios y de integración de aplicaciones NestJS con Jest.
+* Aprender a agrupar tests en suites de tests.
+* Conocer la importancia de la cobertura de tests.
+* Realizar los tests unitarios de controladores y servicios en una API REST.
+* Utilizar mocks de servicios y de repositorios para la realización de tests unitarios.
+* Usar mocks de función y mocks de clases.
+* Realizar tests de integración.
 
 [TIP]
 ====
 Disponible los repositorios usados en este tutorial.
 
 * https://github.com/ualmtorres/fizzbuzz[Fizz Buzz]
+* https://github.com/ualmtorres/testing-product-catalog/tree/base[Base del caso de uso del catálogdo de productos (Rama `base`)]
+* https://github.com/ualmtorres/testing-product-catalog/tree/master[Caso de uso del catálogo de productos (en curso)]
 ====
 
 // Entrar en modo numerado de apartados
@@ -425,6 +434,35 @@ Si ahora hacemos clic sobre `app.service.ts` en el informe, nos llevará al arch
 image::codigoNoProbado.png[]
 
 Si anulamos los comentarios del test y volvemos a ejecutar la cobertura de tests todo volverá a estar como antes y ese código ya estará de nuevo cubierto por los tests.
+
+### Exclusión de archivos de la cobertura de tests
+
+El porcentaje de cobertura de tests se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir arvhivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento `coveragePathIgnorePatterns` del elemento `jest` en el archivo `package.json`.
+
+Por ejemplo, así quedaría el elemento `jest` en `package.json` para excluir los archivos de módulo del proceso de estudio de cobertura:
+
+[source, json]
+----
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [".module.ts"], <1>
+    "testEnvironment": "node"
+  }
+----
+<1> Ignorar del proceso de cobertura los archivos cuyo nombre termine en `.module.ts`
 
 ## Tests de integración
 
@@ -1463,6 +1501,398 @@ describe('ProductService', () => {
 ----
 <1> Inicialización del mock a la clase del mock del repositorio
 
+### Tests end to end
+
+Este tipo de tests se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto podremos realizar la prueba de cada endpoint de la API. NestJS usa https://github.com/visionmedia/supertest[Supertest] para simular las llamadas HTTP.
+
+[TIP]
+====
+Para el desarrollo de nuestros tests seguiremos apoyándonos en que NestJS permite la inyección de dependencias de forma que podremos mockear o sustituir componentes fácilmente en el entorno de pruebas.
+====
+
+#### Añadir script para tests e2e en modo `watch` 
+
+Podemos lanzar las pruebas e2e generadas al crear el proyecto con el CLI de NestJS. En `package.json` hay un script para ello: `test:e2e`. Pero antes de lanzar los tests vamos a introducir un script en `package.json` para que los tests e2e también se ejecuten en modo `watch`. Añadiremos los cambios al final del elemento `scripts`:
+
+Archivo `package.json`
+
+[source, json]
+----
+...
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch" <1>
+  },
+...
+----
+<1> Nueva etiqueta `test:e2e:watch` para tests e2e en modo `watch`.
+
+#### Primer paso. Evitar que falle el test
+
+Comenzaremos haciendo una copia de `test/app.e2e-spec.ts`. La nueva copia se denominará `test/product.e2e-spec.ts`.
+
+[NOTE]
+====
+De forma predeterminada se ejecutarán como tests e2e todos los que incluyan `e2e-spec.ts` en su nombre de archivo. Esto se configura en el archivo `test/jest-e2e.json` y queda configurado automáticamente al crear el proyecto con el CLI de NestJS.
+====
+
+Si ejecutamos los tests e2e con el script `test:e2e:watch`
+
+[source, bash]
+----
+$ npm run test:e2e:watch
+----
+
+indicando como patrón `product.e2e` veremos que se produce un error 
+
+[source, bash]
+----
+ FAIL  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✕ / (GET) (170 ms)
+
+  ● ProductController (e2e) › / (GET)
+
+    RepositoryNotFoundError: No repository for "Product" was found. Looks like this entity is not registered in current "default" connection?
+----
+
+El error indica que el módulo de testing creado para la ocasión no es capaz de resolver las dependencias que hay sobre el repositorio de `Product`. De forma análoga a como hemos hecho con los tests del controlador y del servicio, hay que añadir un mock que permita resolver la dependencia existente. Lo más inmediato es hacer lo mínimo para que el test deje de ejecutarse con errores.
+
+Archivo `test/product.e2e-spec.ts`
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from '../src/product/entities/product.entity';
+import { ProductModule } from '../src/product/product.module';
+
+describe('ProductController (e2e)', () => {
+  let app: INestApplication;
+  const mockProductRepository = {
+    find: jest.fn(), <1>
+  };
+  
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [ProductModule], <2>
+    })
+      .overrideProvider(getRepositoryToken(Product)) <3>
+      .useValue(mockProductRepository) <4>
+      .compile(); <5>
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/product (GET)', () => { <6>
+    return request(app.getHttpServer())
+      .get('/product')
+      .expect(200);
+  });
+});
+----
+<1> Mock del repositorio. Inicialmente sólo con una función de mock `find` vacía para pasar el test
+<2> Módulo de producto
+<3> Repositorio que se va a sustituir (mockear)
+<4> Repositorio que sustituye (mockea) al original
+<5> Construcción del módulo para testing
+<6> Test a ejecutar. Comprueba que en la ruta raiz (`/product`) se devuelve un código de estado HTTP de 200
+
+Tras guardar los cambios veremos que pasan los tests.
+
+[source, bash]
+----
+ PASS  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✓ / (GET) (421 ms)
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks.
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        5.513 s
+----
+
+Este test se limita a comprobar que en la ruta `/product` se devuelve un código de estado HTTP de 200.
+
+#### Segundo paso. Añadir tests
+
+Comenzamos cambiando el único test existente siguendo los pasos siguientes:
+
+. Definir un banco de datos de prueba.
+. Implementar la función de mock `find` para que devuelva el banco de datos de prueba
+. Modificar el test para que compruebe que la llamada al `GET` devuelve el banco de datos de prueba
+
+A continuación se muestra el nuevo archivo de pruebas `test/product.e2e-spec.ts` siguiendo los pasos anteriores:
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from '../src/product/entities/product.entity';
+import { ProductModule } from '../src/product/product.module';
+
+describe('ProductController (e2e)', () => {
+  let app: INestApplication;
+
+  const mockProducts = [ <1>
+    {
+      id: 1,
+      name: 'the-product-1',
+      brand: 'the-brand-1',
+      category: 'the-category-1',
+      price: 10,
+      url: 'http://product.com/the-product-1',
+    },
+    {
+      id: 2,
+      name: 'the-product-2',
+      brand: 'the-brand-2',
+      category: 'the-category-2',
+      price: 20,
+      url: 'http://product.com/the-product-2',
+    },
+  ];
+
+  const mockProductRepository = {
+        find: jest.fn().mockImplementation(() => Promise.resolve(mockProducts)), <2>
+  };
+  
+  
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [ProductModule],
+    })
+      .overrideProvider(getRepositoryToken(Product))
+      .useValue(mockProductRepository)
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/product (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/product')
+      .expect(200)
+      .expect('Content-Type', /json/) <3>
+      .expect(mockProducts); <4>
+  });
+  
+  afterAll(async () => { <5>
+    await app.close();
+  });
+});
+----
+<1> Banco de datos de prueba
+<2> Función mock que devuelve los datos de prueba
+<3> Probamos que la respuesta viene en JSON
+<4> Probamos que la llamada a `GET /product` devuelve los datos de prueba
+<5> Cerrar la aplicación tras cada test
+
+Tras guardar los cambios, los tests pasan con éxito.
+
+[source, bash]
+----
+ PASS  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✓ /product (GET) (396 ms)
+----
+
+[NOTE]
+====
+Más información sobre el modo de uso y las posibilidades de Supertest en la https://github.com/visionmedia/supertest[documentación oficial de Supertest].
+====
+
+Continuemos con un nuevo test para probar la creación de productos. Seguiremos estos pasos:
+
+. Implementar las funciones de mock necesarias para crear un producto (`create` y `save`)
+. Implementar el caso de test
+
+A continuación se muestra cómo queda el archivo de test `test/product.e2e-spec.ts`
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from '../src/product/entities/product.entity';
+import { ProductModule } from '../src/product/product.module';
+import { response } from 'express';
+
+describe('ProductController (e2e)', () => {
+  let app: INestApplication;
+
+  const mockProducts = [
+    {
+      id: 1,
+      name: 'the-product-1',
+      brand: 'the-brand-1',
+      category: 'the-category-1',
+      price: 10,
+      url: 'http://product.com/the-product-1',
+    },
+    {
+      id: 2,
+      name: 'the-product-2',
+      brand: 'the-brand-2',
+      category: 'the-category-2',
+      price: 20,
+      url: 'http://product.com/the-product-2',
+    },
+  ];
+
+  const mockProductRepository = {
+    find: jest.fn().mockImplementation(() => Promise.resolve(mockProducts)),
+
+    create: jest.fn().mockImplementation((dto) => { <1>
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    
+    save: jest <2>
+      .fn()
+      .mockImplementation((newProduct) => Promise.resolve(newProduct)),
+  };
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [ProductModule],
+    })
+      .overrideProvider(getRepositoryToken(Product))
+      .useValue(mockProductRepository)
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/product (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/product')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(mockProducts);
+  });
+
+  it('/users (POST)', () => { <3>
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    return request(app.getHttpServer())
+      .post('/product') <4>
+      .send(createProductDto) <5>
+      .expect(201) <6> 
+      .then((response) => { <7>
+        expect(response.body).toEqual({
+          id: expect.any(Number),
+          ...createProductDto,
+        });
+      });
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});
+----
+<1> Función de mock `create`
+<2> Función de mock `save`
+<3> Test de creación de producto. 
+<4> `POST` en la ruta `/product`
+<5> Creación del producto con el objeto `createProductDto` inicializado en el test
+<6> Comprobar que devuelve el código HTTP de producto creado
+<7> Comprobar que el devuelve un objeto con los datos de creación y un `id` generado
+
+Tras guardar los cambios veremos que los tests pasan.
+
+[source, bash]
+----
+ PASS  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✓ /product (GET) (308 ms)
+    ✓ /users (POST) (29 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        5.623 s, estimated 9 s
+----
+
+### Cobertura de tests
+
+Tras realizar tests del controlador, del servicio y de integración cabe preguntarse la cobertura de tests que tenemos y cuáles son las partes del código del proyecto que aún están sin probar. Para ello lanzaremos la cobertura de tests con 
+
+[source, bash]
+----
+$ npm run test:cov
+----
+
+El informe de resultados del análisis de cobertura está en la carpeta `coverage/lcov-report`. Si abrimos `index.html` accederemos al informe.
+
+image::coberturaGeneral.png[]
+
+En el informe vemos que la cobertura en el código de la carpeta `src` es del 43.33% y en la de la carpeta `src/product` es del 54.9%.
+
+Al hacer clic sobre `src` accederemos al informe de cobertura de esa carpeta y observamos que se está teniendo en cuenta `app.module.ts` para el análisis de cobertura.
+
+image::coberturaSrc.png[]
+
+Análogamente, al hacer clic sobre `src/product` accederemos al informe de cobertura de esa carpeta y observamos que se está teniendo en cuenta `product.module.ts` para el análisis de cobertura.
+
+image::coberturaProduct.png[]
+
+#### Ignorando los módulos para el análisis de la cobertura
+
+A continuación excluiremos los archivos de módulo del estudio de cobertura siguiendo la configuración vista en la sección <<Exclusión de archivos de la cobertura de tests>>. Se trata de incluir en el elemento `jest` del archivo `pagkage.json` el código siguiente:
+
+[source, json]
+----
+    "coveragePathIgnorePatterns": [
+      "module.ts"
+    ],
+----
+
+Si volvemos a pasar la cobertura de tests, los porcentajes mejoran ya que se ignoran los archivos de módulo que no tienen ninguna prueba sobre ellos. Ahora la cobertura en el código de la carpeta `src` la pasado de 43.33% a 59.09% y en la de la carpeta `src/product` ha pasado de 54.9% a 65.11%.
+
+image::coberturaDespuesIgnorar.png[]
+
+Al entrar en la carpeta `src` se observa que ya no aparece el archivo `app.module.ts`.
+
+image::CoberturaSrcDespuesDeIgnorar.png[]
+
+#### Análisis de la cobertura
+
+La cobertura nos da una indicación muy útil para determinar el código que aún no está probado. Por ejemplo, si en el informe de cobertura de la carpeta `coverage/lcov-report` analizamos la cobertura de `src/product/product.controller.ts`, observamos el código que aún está sin probar.
+
+image::coberturaProductController.png[]
+
+La figura nos da una indicación de los métodos en los que deberíamos centrar los esfuerzos de desarrollo de tests. Todo lo que apafece marcado en rojo es código sin tests asociados. Así, deberíamos dirigir el desarrollo de los nuevos tests a los métodos `findAll, findOne` y `remove` del controlador.
+
 :numbered!: 
 
 ## Anexo I. Configuración inicial del proyecto
@@ -1731,4 +2161,6 @@ export class ProductController {
   }
 }
 ----
+
+
 

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.8.dev">
 <meta name="author" content="Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería">
-<title>Testing</title>
+<title>Testing (tutorial en curso)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -439,7 +439,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book toc2 toc-right">
 <div id="header">
-<h1>Testing</h1>
+<h1>Testing (tutorial en curso)</h1>
 <div class="details">
 <span id="author" class="author">Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería</span><br>
 </div>
@@ -459,7 +459,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#truela-kata-fizz-buzz">3.1. La kata Fizz Buzz</a></li>
 </ul>
 </li>
-<li><a href="#truecobertura-de-tests">4. Cobertura de tests</a></li>
+<li><a href="#truecobertura-de-tests">4. Cobertura de tests</a>
+<ul class="sectlevel2">
+<li><a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">4.1. Exclusión de archivos de la cobertura de tests</a></li>
+</ul>
+</li>
 <li><a href="#truetests-de-integración">5. Tests de integración</a>
 <ul class="sectlevel2">
 <li><a href="#truebdd">5.1. BDD</a></li>
@@ -480,6 +484,19 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#trueprimer-paso-evitar-que-falle-el-test-2">6.3.1. Primer paso. Evitar que falle el test</a></li>
 <li><a href="#truesegundo-paso-añadir-tests-2">6.3.2. Segundo paso. Añadir tests</a></li>
 <li><a href="#truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase">6.3.3. Tercer paso. Llevar el mock del repositorio a una clase</a></li>
+</ul>
+</li>
+<li><a href="#truetests-end-to-end">6.4. Tests end to end</a>
+<ul class="sectlevel3">
+<li><a href="#trueañadir-script-para-tests-e2e-en-modo-watch">6.4.1. Añadir script para tests e2e en modo <code>watch</code></a></li>
+<li><a href="#trueprimer-paso-evitar-que-falle-el-test-3">6.4.2. Primer paso. Evitar que falle el test</a></li>
+<li><a href="#truesegundo-paso-añadir-tests-3">6.4.3. Segundo paso. Añadir tests</a></li>
+</ul>
+</li>
+<li><a href="#truecobertura-de-tests-2">6.5. Cobertura de tests</a>
+<ul class="sectlevel3">
+<li><a href="#trueignorando-los-módulos-para-el-análisis-de-la-cobertura">6.5.1. Ignorando los módulos para el análisis de la cobertura</a></li>
+<li><a href="#trueanálisis-de-la-cobertura">6.5.2. Análisis de la cobertura</a></li>
 </ul>
 </li>
 </ul>
@@ -514,7 +531,28 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Objetivos</div>
 <ul>
 <li>
-<p>xxx</p>
+<p>Introducir el proceso de testing en backend.</p>
+</li>
+<li>
+<p>Crear tests unitarios y de integración de aplicaciones NestJS con Jest.</p>
+</li>
+<li>
+<p>Aprender a agrupar tests en suites de tests.</p>
+</li>
+<li>
+<p>Conocer la importancia de la cobertura de tests.</p>
+</li>
+<li>
+<p>Realizar los tests unitarios de controladores y servicios en una API REST.</p>
+</li>
+<li>
+<p>Utilizar mocks de servicios y de repositorios para la realización de tests unitarios.</p>
+</li>
+<li>
+<p>Usar mocks de función y mocks de clases.</p>
+</li>
+<li>
+<p>Realizar tests de integración.</p>
 </li>
 </ul>
 </div>
@@ -532,6 +570,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul>
 <li>
 <p><a href="https://github.com/ualmtorres/fizzbuzz">Fizz Buzz</a></p>
+</li>
+<li>
+<p><a href="https://github.com/ualmtorres/testing-product-catalog/tree/base">Base del caso de uso del catálogdo de productos (Rama <code>base</code>)</a></p>
+</li>
+<li>
+<p><a href="https://github.com/ualmtorres/testing-product-catalog/tree/master">Caso de uso del catálogo de productos (en curso)</a></p>
 </li>
 </ul>
 </div>
@@ -1096,6 +1140,45 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </div>
 <div class="paragraph">
 <p>Si anulamos los comentarios del test y volvemos a ejecutar la cobertura de tests todo volverá a estar como antes y ese código ya estará de nuevo cubierto por los tests.</p>
+</div>
+<div class="sect2">
+<h3 id="trueexclusión-de-archivos-de-la-cobertura-de-tests"><a class="anchor" href="#trueexclusión-de-archivos-de-la-cobertura-de-tests"></a>4.1. Exclusión de archivos de la cobertura de tests</h3>
+<div class="paragraph">
+<p>El porcentaje de cobertura de tests se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir arvhivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento <code>coveragePathIgnorePatterns</code> del elemento <code>jest</code> en el archivo <code>package.json</code>.</p>
+</div>
+<div class="paragraph">
+<p>Por ejemplo, así quedaría el elemento <code>jest</code> en <code>package.json</code> para excluir los archivos de módulo del proceso de estudio de cobertura:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [".module.ts"], <i class="conum" data-value="1"></i><b>(1)</b>
+    "testEnvironment": "node"
+  }</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Ignorar del proceso de cobertura los archivos cuyo nombre termine en <code>.module.ts</code></td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </div>
@@ -2668,6 +2751,567 @@ describe('ProductService', () =&gt; {
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="truetests-end-to-end"><a class="anchor" href="#truetests-end-to-end"></a>6.4. Tests end to end</h3>
+<div class="paragraph">
+<p>Este tipo de tests se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto podremos realizar la prueba de cada endpoint de la API. NestJS usa <a href="https://github.com/visionmedia/supertest">Supertest</a> para simular las llamadas HTTP.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Para el desarrollo de nuestros tests seguiremos apoyándonos en que NestJS permite la inyección de dependencias de forma que podremos mockear o sustituir componentes fácilmente en el entorno de pruebas.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="trueañadir-script-para-tests-e2e-en-modo-watch"><a class="anchor" href="#trueañadir-script-para-tests-e2e-en-modo-watch"></a>6.4.1. Añadir script para tests e2e en modo <code>watch</code></h4>
+<div class="paragraph">
+<p>Podemos lanzar las pruebas e2e generadas al crear el proyecto con el CLI de NestJS. En <code>package.json</code> hay un script para ello: <code>test:e2e</code>. Pero antes de lanzar los tests vamos a introducir un script en <code>package.json</code> para que los tests e2e también se ejecuten en modo <code>watch</code>. Añadiremos los cambios al final del elemento <code>scripts</code>:</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>package.json</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">...
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch" <i class="conum" data-value="1"></i><b>(1)</b>
+  },
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Nueva etiqueta <code>test:e2e:watch</code> para tests e2e en modo <code>watch</code>.</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="trueprimer-paso-evitar-que-falle-el-test-3"><a class="anchor" href="#trueprimer-paso-evitar-que-falle-el-test-3"></a>6.4.2. Primer paso. Evitar que falle el test</h4>
+<div class="paragraph">
+<p>Comenzaremos haciendo una copia de <code>test/app.e2e-spec.ts</code>. La nueva copia se denominará <code>test/product.e2e-spec.ts</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>De forma predeterminada se ejecutarán como tests e2e todos los que incluyan <code>e2e-spec.ts</code> en su nombre de archivo. Esto se configura en el archivo <code>test/jest-e2e.json</code> y queda configurado automáticamente al crear el proyecto con el CLI de NestJS.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Si ejecutamos los tests e2e con el script <code>test:e2e:watch</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm run test:e2e:watch</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>indicando como patrón <code>product.e2e</code> veremos que se produce un error</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> FAIL  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✕ / (GET) (170 ms)
+
+  ● ProductController (e2e) › / (GET)
+
+    RepositoryNotFoundError: No repository for "Product" was found. Looks like this entity is not registered in current "default" connection?</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>El error indica que el módulo de testing creado para la ocasión no es capaz de resolver las dependencias que hay sobre el repositorio de <code>Product</code>. De forma análoga a como hemos hecho con los tests del controlador y del servicio, hay que añadir un mock que permita resolver la dependencia existente. Lo más inmediato es hacer lo mínimo para que el test deje de ejecutarse con errores.</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>test/product.e2e-spec.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from '../src/product/entities/product.entity';
+import { ProductModule } from '../src/product/product.module';
+
+describe('ProductController (e2e)', () =&gt; {
+  let app: INestApplication;
+  const mockProductRepository = {
+    find: jest.fn(), <i class="conum" data-value="1"></i><b>(1)</b>
+  };
+
+  beforeEach(async () =&gt; {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [ProductModule], <i class="conum" data-value="2"></i><b>(2)</b>
+    })
+      .overrideProvider(getRepositoryToken(Product)) <i class="conum" data-value="3"></i><b>(3)</b>
+      .useValue(mockProductRepository) <i class="conum" data-value="4"></i><b>(4)</b>
+      .compile(); <i class="conum" data-value="5"></i><b>(5)</b>
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/product (GET)', () =&gt; { <i class="conum" data-value="6"></i><b>(6)</b>
+    return request(app.getHttpServer())
+      .get('/product')
+      .expect(200);
+  });
+});</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Mock del repositorio. Inicialmente sólo con una función de mock <code>find</code> vacía para pasar el test</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Módulo de producto</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Repositorio que se va a sustituir (mockear)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Repositorio que sustituye (mockea) al original</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Construcción del módulo para testing</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Test a ejecutar. Comprueba que en la ruta raiz (<code>/product</code>) se devuelve un código de estado HTTP de 200</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Tras guardar los cambios veremos que pasan los tests.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✓ / (GET) (421 ms)
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks.
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        5.513 s</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Este test se limita a comprobar que en la ruta <code>/product</code> se devuelve un código de estado HTTP de 200.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="truesegundo-paso-añadir-tests-3"><a class="anchor" href="#truesegundo-paso-añadir-tests-3"></a>6.4.3. Segundo paso. Añadir tests</h4>
+<div class="paragraph">
+<p>Comenzamos cambiando el único test existente siguendo los pasos siguientes:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Definir un banco de datos de prueba.</p>
+</li>
+<li>
+<p>Implementar la función de mock <code>find</code> para que devuelva el banco de datos de prueba</p>
+</li>
+<li>
+<p>Modificar el test para que compruebe que la llamada al <code>GET</code> devuelve el banco de datos de prueba</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra el nuevo archivo de pruebas <code>test/product.e2e-spec.ts</code> siguiendo los pasos anteriores:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from '../src/product/entities/product.entity';
+import { ProductModule } from '../src/product/product.module';
+
+describe('ProductController (e2e)', () =&gt; {
+  let app: INestApplication;
+
+  const mockProducts = [ <i class="conum" data-value="1"></i><b>(1)</b>
+    {
+      id: 1,
+      name: 'the-product-1',
+      brand: 'the-brand-1',
+      category: 'the-category-1',
+      price: 10,
+      url: 'http://product.com/the-product-1',
+    },
+    {
+      id: 2,
+      name: 'the-product-2',
+      brand: 'the-brand-2',
+      category: 'the-category-2',
+      price: 20,
+      url: 'http://product.com/the-product-2',
+    },
+  ];
+
+  const mockProductRepository = {
+        find: jest.fn().mockImplementation(() =&gt; Promise.resolve(mockProducts)), <i class="conum" data-value="2"></i><b>(2)</b>
+  };
+
+
+
+  beforeEach(async () =&gt; {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [ProductModule],
+    })
+      .overrideProvider(getRepositoryToken(Product))
+      .useValue(mockProductRepository)
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/product (GET)', () =&gt; {
+    return request(app.getHttpServer())
+      .get('/product')
+      .expect(200)
+      .expect('Content-Type', /json/) <i class="conum" data-value="3"></i><b>(3)</b>
+      .expect(mockProducts); <i class="conum" data-value="4"></i><b>(4)</b>
+  });
+
+  afterAll(async () =&gt; { <i class="conum" data-value="5"></i><b>(5)</b>
+    await app.close();
+  });
+});</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Banco de datos de prueba</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Función mock que devuelve los datos de prueba</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Probamos que la respuesta viene en JSON</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Probamos que la llamada a <code>GET /product</code> devuelve los datos de prueba</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Cerrar la aplicación tras cada test</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Tras guardar los cambios, los tests pasan con éxito.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✓ /product (GET) (396 ms)</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Más información sobre el modo de uso y las posibilidades de Supertest en la <a href="https://github.com/visionmedia/supertest">documentación oficial de Supertest</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Continuemos con un nuevo test para probar la creación de productos. Seguiremos estos pasos:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Implementar las funciones de mock necesarias para crear un producto (<code>create</code> y <code>save</code>)</p>
+</li>
+<li>
+<p>Implementar el caso de test</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra cómo queda el archivo de test <code>test/product.e2e-spec.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Product } from '../src/product/entities/product.entity';
+import { ProductModule } from '../src/product/product.module';
+import { response } from 'express';
+
+describe('ProductController (e2e)', () =&gt; {
+  let app: INestApplication;
+
+  const mockProducts = [
+    {
+      id: 1,
+      name: 'the-product-1',
+      brand: 'the-brand-1',
+      category: 'the-category-1',
+      price: 10,
+      url: 'http://product.com/the-product-1',
+    },
+    {
+      id: 2,
+      name: 'the-product-2',
+      brand: 'the-brand-2',
+      category: 'the-category-2',
+      price: 20,
+      url: 'http://product.com/the-product-2',
+    },
+  ];
+
+  const mockProductRepository = {
+    find: jest.fn().mockImplementation(() =&gt; Promise.resolve(mockProducts)),
+
+    create: jest.fn().mockImplementation((dto) =&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+
+    save: jest <i class="conum" data-value="2"></i><b>(2)</b>
+      .fn()
+      .mockImplementation((newProduct) =&gt; Promise.resolve(newProduct)),
+  };
+
+  beforeEach(async () =&gt; {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [ProductModule],
+    })
+      .overrideProvider(getRepositoryToken(Product))
+      .useValue(mockProductRepository)
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/product (GET)', () =&gt; {
+    return request(app.getHttpServer())
+      .get('/product')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(mockProducts);
+  });
+
+  it('/users (POST)', () =&gt; { <i class="conum" data-value="3"></i><b>(3)</b>
+    const createProductDto = {
+      name: 'the-product',
+      brand: 'the-brand',
+      category: 'the-category',
+      price: 10,
+      url: 'http://product.com/the-product',
+    };
+
+    return request(app.getHttpServer())
+      .post('/product') <i class="conum" data-value="4"></i><b>(4)</b>
+      .send(createProductDto) <i class="conum" data-value="5"></i><b>(5)</b>
+      .expect(201) <i class="conum" data-value="6"></i><b>(6)</b>
+      .then((response) =&gt; { <i class="conum" data-value="7"></i><b>(7)</b>
+        expect(response.body).toEqual({
+          id: expect.any(Number),
+          ...createProductDto,
+        });
+      });
+  });
+
+  afterAll(async () =&gt; {
+    await app.close();
+  });
+});</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Función de mock <code>create</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Función de mock <code>save</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Test de creación de producto.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td><code>POST</code> en la ruta <code>/product</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Creación del producto con el objeto <code>createProductDto</code> inicializado en el test</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Comprobar que devuelve el código HTTP de producto creado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>Comprobar que el devuelve un objeto con los datos de creación y un <code>id</code> generado</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Tras guardar los cambios veremos que los tests pasan.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  test/product.e2e-spec.ts
+  ProductController (e2e)
+    ✓ /product (GET) (308 ms)
+    ✓ /users (POST) (29 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        5.623 s, estimated 9 s</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truecobertura-de-tests-2"><a class="anchor" href="#truecobertura-de-tests-2"></a>6.5. Cobertura de tests</h3>
+<div class="paragraph">
+<p>Tras realizar tests del controlador, del servicio y de integración cabe preguntarse la cobertura de tests que tenemos y cuáles son las partes del código del proyecto que aún están sin probar. Para ello lanzaremos la cobertura de tests con</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm run test:cov</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>El informe de resultados del análisis de cobertura está en la carpeta <code>coverage/lcov-report</code>. Si abrimos <code>index.html</code> accederemos al informe.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/coberturaGeneral.png" alt="coberturaGeneral">
+</div>
+</div>
+<div class="paragraph">
+<p>En el informe vemos que la cobertura en el código de la carpeta <code>src</code> es del 43.33% y en la de la carpeta <code>src/product</code> es del 54.9%.</p>
+</div>
+<div class="paragraph">
+<p>Al hacer clic sobre <code>src</code> accederemos al informe de cobertura de esa carpeta y observamos que se está teniendo en cuenta <code>app.module.ts</code> para el análisis de cobertura.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/coberturaSrc.png" alt="coberturaSrc">
+</div>
+</div>
+<div class="paragraph">
+<p>Análogamente, al hacer clic sobre <code>src/product</code> accederemos al informe de cobertura de esa carpeta y observamos que se está teniendo en cuenta <code>product.module.ts</code> para el análisis de cobertura.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/coberturaProduct.png" alt="coberturaProduct">
+</div>
+</div>
+<div class="sect3">
+<h4 id="trueignorando-los-módulos-para-el-análisis-de-la-cobertura"><a class="anchor" href="#trueignorando-los-módulos-para-el-análisis-de-la-cobertura"></a>6.5.1. Ignorando los módulos para el análisis de la cobertura</h4>
+<div class="paragraph">
+<p>A continuación excluiremos los archivos de módulo del estudio de cobertura siguiendo la configuración vista en la sección <a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">Exclusión de archivos de la cobertura de tests</a>. Se trata de incluir en el elemento <code>jest</code> del archivo <code>pagkage.json</code> el código siguiente:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">    "coveragePathIgnorePatterns": [
+      "module.ts"
+    ],</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Si volvemos a pasar la cobertura de tests, los porcentajes mejoran ya que se ignoran los archivos de módulo que no tienen ninguna prueba sobre ellos. Ahora la cobertura en el código de la carpeta <code>src</code> la pasado de 43.33% a 59.09% y en la de la carpeta <code>src/product</code> ha pasado de 54.9% a 65.11%.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/coberturaDespuesIgnorar.png" alt="coberturaDespuesIgnorar">
+</div>
+</div>
+<div class="paragraph">
+<p>Al entrar en la carpeta <code>src</code> se observa que ya no aparece el archivo <code>app.module.ts</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/CoberturaSrcDespuesDeIgnorar.png" alt="CoberturaSrcDespuesDeIgnorar">
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="trueanálisis-de-la-cobertura"><a class="anchor" href="#trueanálisis-de-la-cobertura"></a>6.5.2. Análisis de la cobertura</h4>
+<div class="paragraph">
+<p>La cobertura nos da una indicación muy útil para determinar el código que aún no está probado. Por ejemplo, si en el informe de cobertura de la carpeta <code>coverage/lcov-report</code> analizamos la cobertura de <code>src/product/product.controller.ts</code>, observamos el código que aún está sin probar.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/coberturaProductController.png" alt="coberturaProductController">
+</div>
+</div>
+<div class="paragraph">
+<p>La figura nos da una indicación de los métodos en los que deberíamos centrar los esfuerzos de desarrollo de tests. Todo lo que apafece marcado en rojo es código sin tests asociados. Así, deberíamos dirigir el desarrollo de los nuevos tests a los métodos <code>findAll, findOne</code> y <code>remove</code> del controlador.</p>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2975,7 +3619,7 @@ export class ProductController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-11-11 21:50:45 +0100
+Last updated 2021-11-12 21:51:49 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
