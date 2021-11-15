@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.8.dev">
 <meta name="author" content="Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería">
-<title>Testing (tutorial en curso)</title>
+<title>Testing de APIs NestJS (tutorial en curso)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -439,7 +439,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book toc2 toc-right">
 <div id="header">
-<h1>Testing (tutorial en curso)</h1>
+<h1>Testing de APIs NestJS (tutorial en curso)</h1>
 <div class="details">
 <span id="author" class="author">Servicio de las Tecnologías de la Información y las Comunicaciones - Universidad de Almería</span><br>
 </div>
@@ -461,14 +461,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#truecobertura-de-tests">4. Cobertura de tests</a>
 <ul class="sectlevel2">
-<li><a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">4.1. Exclusión de archivos de la cobertura de tests</a></li>
+<li><a href="#trueplugin-coverage-gutters">4.1. Plugin Coverage Gutters</a></li>
+<li><a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">4.2. Exclusión de archivos de la cobertura de tests</a></li>
 </ul>
 </li>
-<li><a href="#truetests-de-integración">5. Tests de integración</a>
-<ul class="sectlevel2">
-<li><a href="#truebdd">5.1. BDD</a></li>
-</ul>
-</li>
+<li><a href="#truetests-de-integración">5. Tests de integración</a></li>
 <li><a href="#truecaso-de-uso-catálogo-de-productos">6. Caso de uso. Catálogo de productos</a>
 <ul class="sectlevel2">
 <li><a href="#trueprimeros-tests">6.1. Primeros tests</a></li>
@@ -511,6 +508,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#trueadaptación-de-los-parámetros-del-controlador">Adaptación de los parámetros del controlador</a></li>
 </ul>
 </li>
+<li><a href="#trueanexo-ii-bdd">Anexo II. BDD</a></li>
 </ul>
 </div>
 </div>
@@ -527,6 +525,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sect1">
 <h2 id="trueresumen"><a class="anchor" href="#trueresumen"></a>Resumen</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>El proceso de testing es una etapa fundamental en el desarrollo de cualquier proyecto serio. Permite dar un feedback inmediato al equipo de desarrollo y hace tener más confianza en la aplicación y durante los procesos de refactorización. NestJS hace el proceso de desarrollo de tests sea más sencillo integrando Jest y Supertest sin configuración al crear un proyecto nuevo. Además, el uso del sistema de inyección de dependencias de NestJS facilita el uso de mocks. En este tutorial se presenta el desarrollo de tests unitarios para controladores y servicios, y el desarrollo de tests de integración, todo sobre un ejemplo en NestJS de una API de un catálogo ficticio de productos.</p>
+</div>
 <div class="ulist">
 <div class="title">Objetivos</div>
 <ul>
@@ -534,10 +535,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Introducir el proceso de testing en backend.</p>
 </li>
 <li>
-<p>Crear tests unitarios y de integración de aplicaciones NestJS con Jest.</p>
+<p>Introducir el uso de Jest y Supertest como frameworks de testing.</p>
 </li>
 <li>
-<p>Aprender a agrupar tests en suites de tests.</p>
+<p>Crear tests unitarios y de integración en aplicaciones NestJS.</p>
 </li>
 <li>
 <p>Conocer la importancia de la cobertura de tests.</p>
@@ -564,7 +565,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Disponible los repositorios usados en este tutorial.</p>
+<p>Disponibles los repositorios usados en este tutorial.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -651,10 +652,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 </table>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>NestJS ayuda para que el proceso sea menos tedioso.</p>
+<div class="paragraph">
+<p>NestJS ayuda para que el proceso sea menos tedioso ofreciendo lo siguiente:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -667,10 +667,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Uso del sistema de inyección de dependencias de NestJS para facilitar el uso de mocks.</p>
 </li>
 <li>
-<p>Jest configurado en <code>package.json</code> determinando mediante expresiones regulares los archivos que se consideran tests (p.e. para que las pruebas estuviesen en cualquier archivo <code>.spec.ts</code> usaríamos <code>"testRegex": ".*\\.spec\\.ts$"</code>).</p>
-</li>
-</ul>
-</div>
+<p>Jest se configura a través del archivo <code>package.json</code> determinando mediante expresiones regulares los archivos que se consideran tests (p.e. para que las pruebas estuviesen en cualquier archivo <code>.spec.ts</code> usaríamos <code>"testRegex": ".*\\.spec\\.ts$"</code>).</p>
 </li>
 </ul>
 </div>
@@ -680,7 +677,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="truehola-mundo"><a class="anchor" href="#truehola-mundo"></a>2. Hola mundo</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Crearemos un proyecto de ejemplo para la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>.</p>
+<p>Crearemos un proyecto de ejemplo para la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>. Se trata de un ejemplo sencillo en que para números comprendidos entre 1 y 100 se devolverá <em>Fizz</em> si el número es múltiplo de 3, <em>Buzz</em> si es múltiplo de 5 o <em>Fizzbuzz</em> si es múltiplo de 15. En caso contrario, se devolverá el propio número.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -717,13 +714,12 @@ Ran all test suites.</code></pre>
 </div>
 <div class="sect2">
 <h3 id="truela-función-it"><a class="anchor" href="#truela-función-it"></a>2.1. La función <code>it</code></h3>
-<div class="ulist">
-<ul>
-<li>
-<p>Tests implementados en funciones <code>it</code> o <code>test</code>.</p>
-</li>
-<li>
-<p>Toma 3 argumentos (nombre del test, función con las expectativas y timeout, este último opcional). El timeout predeterminado es de 5 segundos.</p>
+<div class="paragraph">
+<p>En Jest, los tests son implementados mediente funciones <code>it</code> o <code>test</code> (se pueden usar de forma indistinta). La función <code>it</code> toma 3 argumentos: nombre del test, función con las expectativas y timeout, este último opcional. El timeout predeterminado es de 5 segundos. A continuación se muestra el test generado por NestJS al crear un proyecto.</p>
+</div>
+<div class="paragraph">
+<p>+</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">it('should return "Hello World!"', () =&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
@@ -743,23 +739,40 @@ Ran all test suites.</code></pre>
 </tr>
 </table>
 </div>
-</li>
-</ul>
-</div>
 </div>
 <div class="sect2">
 <h3 id="trueagrupación-de-tests"><a class="anchor" href="#trueagrupación-de-tests"></a>2.2. Agrupación de tests</h3>
 <div class="paragraph">
-<p>Para tener un código de testing más limpio y organizado se pueden incluir los tests (<code>it</code>) en la función <code>describe</code>. Esto genera un bloque formado por varios tests. Además, los bloques <code>describe</code> se pueden anidar</p>
+<p>Para tener un código de testing más limpio y organizado, los tests (<code>it</code>)  se pueden incluir en la función <code>describe</code>. Esto da lugar a un código de testing agrupado en bloques <code>describe</code> formados por tests <code>it</code>. Además, los bloques <code>describe</code> se pueden anidar. A continuación se muestra la estructura de agrupación de tests en bloques <code>describe</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">  describe('root', () =&gt; {
-    it('should return "Hello World!"', () =&gt; {
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">  describe('root', () =&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
+    it('should return "Hello World!"', () =&gt; { <i class="conum" data-value="2"></i><b>(2)</b>
       expect(appController.getHello()).toBe('Hello World!');
+    });
+
+    it('should ....' () =&gt; {
+      // test code
     });
   });</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td><code>describe</code> como agregador de tests</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Primer test del bloque</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Un segundo test del bloque</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -770,7 +783,7 @@ Ran all test suites.</code></pre>
 <div class="sect2">
 <h3 id="truela-kata-fizz-buzz"><a class="anchor" href="#truela-kata-fizz-buzz"></a>3.1. La kata Fizz Buzz</h3>
 <div class="paragraph">
-<p>Haremos los tests unitarios usando la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>. Seguiremos estos pasos:</p>
+<p>Para hacer los tests unitarios de la kata seguiremos estos pasos:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -785,7 +798,7 @@ nest g controller fizzbuzz</code></pre>
 </div>
 </li>
 <li>
-<p><em>El servicio</em>. Crearemos un nuevo método en <code>fizzbuzz/fizzbuzz.service.ts</code> denominado <code>fizzbuzz</code> que aceptará un argumento de tipo <code>number</code>.</p>
+<p><em>El servicio</em>. Crearemos un nuevo método en <code>fizzbuzz/fizzbuzz.service.ts</code> denominado <code>fizzbuzz</code> que aceptará un argumento de tipo <code>number</code>. El servicio tiene la lógica siguiente para implementar la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Injectable } from '@nestjs/common';
@@ -851,7 +864,7 @@ export class FizzbuzzController {
 </div>
 </li>
 <li>
-<p><em>Los tests</em>. Añadiremos los tests en el grupo <code>describe</code> existente en <code>fizzbuzz/fizzbuzz.service.spec.ts</code></p>
+<p>El CLI de NestJS ha creado el archivo <code>fizzbuzz/fizzbuzz.service.spec.ts</code> para los tests del servicio generado. Los tests los añadiremos en el grupo <code>describe</code> existente</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Test, TestingModule } from '@nestjs/testing';
@@ -907,21 +920,21 @@ describe('FizzbuzzService', () =&gt; { <i class="conum" data-value="1"></i><b>(1
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>Cada test va en su <code>it</code> (o <code>test</code>) y contiene un texto (realmente es el nombre del test) que permite entender claramente la intención del test.</td>
+<td>Cada test va en su función <code>it</code> (o <code>test</code>) y contiene un texto (realmente es el nombre del test) que permite entender claramente la intención del test.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>Por un lado indicamos lo que queremos probar y por otro el valor esperado.</td>
+<td>Con <code>expect</code> indicamos lo que queremos probar y con <code>toBe</code> indicamos el valor esperado.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
-<td>En este caso, quizá sería más apropiado crear dos tests para probar cada uno los límites del rango no permitido (i.e. un test para comprobar que no se aceptn menores que 1 y otro test para comprobar que no se aceptan mayores que 100).</td>
+<td>En este caso, quizá sería más apropiado crear dos tests separados para probar cada uno los de límites del rango no permitido (i.e. un test para comprobar que no se aceptan números menores que 1 y otro test para comprobar que no se aceptan números mayores que 100).</td>
 </tr>
 </table>
 </div>
 </li>
 <li>
-<p><strong>Añadir el servicio de Fizz Buzz al archivo de testing del controlador.</strong> Este paso es muy importante porque NestJS no añade el servicio de Fizz Buzz al archivo de testing del controlador. Tenemos dos opciones: añadir el servicio en el elemento <code>providers</code> o cargar directamente el módulo que definimos al principio, y que ya incorporaba el controlador y el servicio. Esta última será la opción que utilizaremos aquí y que se muestra en el listado de <code>fizzbuzz/fizzbuzz.controller.spec.ts</code>.</p>
+<p><strong>Añadir el servicio de Fizz Buzz al archivo de testing del controlador.</strong> Este paso es muy importante porque para el testing, NestJS usa otro entorno diferente al de ejecución. Esto hace que el controlador no pueda resolver de forma predererminada su dependencia con el servicio. Es decir, en el archivo de test del controlador no está añadido el servicio Fizzbuzz. Tenemos dos opciones: añadir el servicio en el elemento <code>providers</code> o cargar directamente el módulo que definimos al principio, y que ya incorporaba el controlador y el servicio. Esta última será la opción que utilizaremos aquí y que se muestra en el listado de <code>fizzbuzz/fizzbuzz.controller.spec.ts</code>.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Test, TestingModule } from '@nestjs/testing';
@@ -954,7 +967,7 @@ describe('FizzbuzzController', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Declaración insuficiente (ahora comentada) inicial en la que sólo se especificaba el controlador y no el servicio.</td>
+<td>Declaración insuficiente inicial (ahora comentada) en la que sólo se especificaba el controlador y no el servicio.</td>
 </tr>
 </table>
 </div>
@@ -962,7 +975,7 @@ describe('FizzbuzzController', () =&gt; {
 </ol>
 </div>
 <div class="paragraph">
-<p>Ejecutaremos los tests con <code>npm run test</code>. Este será su resultado:</p>
+<p>Si ahora ejecutamos los tests con <code>npm run test</code>, este será su resultado:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1005,7 +1018,7 @@ FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts
 </div>
 </div>
 <div class="paragraph">
-<p>Esto es una señal de que falta por incluir un servicio en la lista de servicios, bien del módulo, o a nivel de aplicación en <code>app.module.ts</code>. En aras de una mejor organización, optaremos por organizar los controladores y servicios en módulos.</p>
+<p>Esto es una señal de que falta por incluir un servicio en la lista de servicios del archivo de tests.</p>
 </div>
 </td>
 </tr>
@@ -1015,7 +1028,7 @@ FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts
 <div class="content">
 <div class="title">Mostrar los datos de cada test</div>
 <div class="paragraph">
-<p>De forma predeterminada, los resultados de ejecución de los tests se muestran de forma agregada, perdiéndose los datos de cada test. Esto en ocasiones puede ser útil. Para activarlo, basta con cambiar en <code>package.json</code> la entrada en <code>scripts</code> sustituyendo <code>"test": "jest",</code> por <code>"test": "jest --verbose",</code>.</p>
+<p>De forma predeterminada, los resultados de ejecución de los tests se muestran de forma agregada si hay varias suites de tests, perdiéndose los datos de cada test individual. En ocasiones, esta información detallada de cada test puede ser útil. Para activarlo, basta con cambiar en <code>package.json</code> la entrada en <code>scripts</code> sustituyendo <code>"test": "jest",</code> por <code>"test": "jest --verbose",</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1025,7 +1038,7 @@ FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts
     "test": "jest --verbose", <i class="conum" data-value="1"></i><b>(1)</b>
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    ....</code></pre>
+....</code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -1037,7 +1050,7 @@ FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts
 </table>
 </div>
 <div class="paragraph">
-<p>De esta forma, ahora el resultado al ejecutar <code>npm run test</code> será más detallada como se muestra a continuación:</p>
+<p>De esta forma, ahora el resultado al ejecutar <code>npm run test</code> será más detallado como se muestra a continuación:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1074,7 +1087,7 @@ Time:        2.575 s, estimated 3 s</code></pre>
 <h2 id="truecobertura-de-tests"><a class="anchor" href="#truecobertura-de-tests"></a>4. Cobertura de tests</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Una medida muy interesante nos la da la cobertura de tests, que ofrece el porcentaje de código que está incluido en los tests. Esto es muy útil porque nos ayuda a dirigir los esfuerzos para crear tests de código que está oculto a los tests y que puede ser una potencial fuente de errores.</p>
+<p>En el proceso de testing la cobertura de tests proporciona una medida muy interesante. Ofrece el porcentaje de código que está incluido en los tests, es decir, el porcentaje de código que se está probando. Esto es muy útil porque nos ayuda a dirigir los esfuerzos para crear tests para el código que aún está oculto a los tests y que puede ser una potencial fuente de errores.</p>
 </div>
 <div class="paragraph">
 <p>Podemos conocer la cobertura de nuestros tests con:</p>
@@ -1085,7 +1098,7 @@ Time:        2.575 s, estimated 3 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Esto, además de ejecutar los tests unitarios nos dará el porcentaje de código testado para cada archivo y a nivel global.</p>
+<p>Esto, además de ejecutar los tests unitarios, nos dará el porcentaje de código testado para cada archivo y a nivel global.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1115,7 +1128,7 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Como resultado también se genera una carpeta <code>coverage/lcov-coverage</code> con ese mismo informe, pero en HTML.</p>
+<p>Como resultado también se genera una carpeta <code>coverage/lcov-coverage</code> con ese mismo informe, pero en HTML. Además, podemos hacer clic sobre cada archivo y ver su cobertura individual.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1123,7 +1136,7 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Si ahora modificamos los tests y comentamos uno de ellos, por ejemplo el que probaba los múltiplos de 15, y volvemos a ejecutar la cobertura de tests con <code>npm run test:cov</code> veremos que la cobertura de <code>app.service.ts</code> ha bajado.</p>
+<p>Si ahora modificamos los tests y comentamos uno de ellos, por ejemplo el que probaba los múltiplos de 15, y volvemos a ejecutar la cobertura de tests con <code>npm run test:cov</code> veremos que la cobertura de <code>app.service.ts</code> ha bajado de 100% a 92.86%.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1131,7 +1144,7 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Si ahora hacemos clic sobre <code>app.service.ts</code> en el informe, nos llevará al archivo y nos dirá las líneas de código que no están tratadas (cubiertas) en ningún test.</p>
+<p>Si ahora hacemos clic sobre <code>app.service.ts</code> en el informe, nos llevará al archivo y nos dirá marcará en rojo las líneas de código que no están tratadas (cubiertas) en ningún test.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1142,12 +1155,34 @@ Time:        3.188 s, estimated 4 s</code></pre>
 <p>Si anulamos los comentarios del test y volvemos a ejecutar la cobertura de tests todo volverá a estar como antes y ese código ya estará de nuevo cubierto por los tests.</p>
 </div>
 <div class="sect2">
-<h3 id="trueexclusión-de-archivos-de-la-cobertura-de-tests"><a class="anchor" href="#trueexclusión-de-archivos-de-la-cobertura-de-tests"></a>4.1. Exclusión de archivos de la cobertura de tests</h3>
+<h3 id="trueplugin-coverage-gutters"><a class="anchor" href="#trueplugin-coverage-gutters"></a>4.1. Plugin Coverage Gutters</h3>
 <div class="paragraph">
-<p>El porcentaje de cobertura de tests se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir arvhivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento <code>coveragePathIgnorePatterns</code> del elemento <code>jest</code> en el archivo <code>package.json</code>.</p>
+<p><a href="https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters">Coverage Gutters</a> es un plugin para Visual Studio Code que permite ver la cobertura de cada archivo mostrando su porcentaje en la barra de estado e indicando en verde y rojo sobre el código las líneas probadas por los tests y las no probadas.</p>
 </div>
 <div class="paragraph">
-<p>Por ejemplo, así quedaría el elemento <code>jest</code> en <code>package.json</code> para excluir los archivos de módulo del proceso de estudio de cobertura:</p>
+<p>Tras instalarlo aparecerá un botón <code>Watch</code> en la barra de estado que podremos activar para que muestre la cobertura del archivo abierto.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/CoverageGuttersBoton.png" alt="CoverageGuttersBoton">
+</div>
+</div>
+<div class="paragraph">
+<p>Tras pulsar el botón, si abrimos un archivo nos mostrará la cobertura directamente en Visual Studio Code. La figura siguiente muestra en verde las líneas probadas, en rojo las líneas no probadas y el porcentaje de cobertura en la barra de estado (50%).</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/CoverageGuttersWatch.png" alt="CoverageGuttersWatch">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueexclusión-de-archivos-de-la-cobertura-de-tests"><a class="anchor" href="#trueexclusión-de-archivos-de-la-cobertura-de-tests"></a>4.2. Exclusión de archivos de la cobertura de tests</h3>
+<div class="paragraph">
+<p>El porcentaje de cobertura de tests que devuelve el informe se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir arvhivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento <code>coveragePathIgnorePatterns</code> del elemento <code>jest</code> en el archivo <code>package.json</code>.</p>
+</div>
+<div class="paragraph">
+<p>Por ejemplo, si decidimos excluir del proceso de análisis de cobertura de tests los archivos de los módulos (p.e. <code>app.module.ts</code>, <code>product.module.ts</code> y otros módulos), así quedaría el elemento <code>jest</code> en <code>package.json</code> para excluir los archivos de módulo:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1188,29 +1223,25 @@ Time:        3.188 s, estimated 4 s</code></pre>
 <div class="paragraph">
 <p>En backend los utilizaremos para testear repositorios. Si hemos seguido el principio de Inversión de dependencias tendremos por un lado una interface con una serie de métodos (p.e. la interface <code>UserRepository</code> con los métodos <code>save</code> y <code>find</code>. Por otro lado, tendremos un conjunto de clases repositorio particulares (p.e. MySQLUserRepository) que implementan esa interface.</p>
 </div>
+<div class="paragraph">
+<p>En este tutorial tratamos tests unitarios y test end-to-end.</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>Test unitarios: <code>npm run test</code>. Se centra en los módulos y en las clases. El ejemplo básico incorporado comprueba que la llamada al controlador devuelve <code>Hello World!</code>.</p>
+<p>Tests unitarios: <code>npm run test</code>. Se centran en los módulos y en las clases. El ejemplo básico incorporado por el CLI de NestJS al crear un proyecto comprueba que la llamada al controlador devuelve <code>Hello World!</code>.</p>
 </li>
 <li>
-<p>Test end-to-end: <code>npm run test:e2e</code>. Se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto automatizaremos la prueba de cada endpoint de la API. Nest usará Supertest para simular las llamadas HTTP.</p>
+<p>Tests end-to-end: <code>npm run test:e2e</code>. Se centran más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto automatizaremos la prueba de cada endpoint de la API. Nest usará Supertest para simular las llamadas HTTP.</p>
 </li>
 </ul>
 </div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">¿Hace falta probarlo todo?</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Decidimos qué probar. Alguien podría decir de probarlo todo con una cobertura cercana al 100%.</p>
-</li>
-<li>
-<p>No es necesario. Sólo hay que probar las partes más críticas. Puede que esté entre el 70%-90%</p>
-</li>
-<li>
-<p>Probaremos</p>
+<div class="paragraph">
+<p>En el proceso de testing decidimos qué probar. Alguien podría decir de probarlo todo con una cobertura cercana al 100%. Sin embargo, no es necesario. Sólo hay que probar las partes más críticas. Puede que esté entre el 70%-90%. Normalmente probaremos</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -1219,179 +1250,11 @@ Time:        3.188 s, estimated 4 s</code></pre>
 <li>
 <p>Controladores (si hay <code>app.controller.ts</code> también)</p>
 </li>
-</ul>
-</div>
-</li>
 <li>
-<p>No hace falta probar DTOs, constantes, entidades y módulos.</p>
+<p>No hace falta probar DTOs, constantes, entidades y módulos (los podemos excluir de la cobertura -ver <a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">Exclusión de archivos de la cobertura de tests</a>)</p>
 </li>
 </ul>
 </div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="truebdd"><a class="anchor" href="#truebdd"></a>5.1. BDD</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>npm install jest-cucumber --save-dev</p>
-</li>
-<li>
-<p>Crear un archivo <code>tests/jest-bdd.json</code> con este contenido</p>
-<div class="listingblock">
-<div class="content">
-<pre>{
-  "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
-  "testEnvironment": "node",
-  "testMatch": [
-    "**/*.steps.ts"
-  ],
-  "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
-  }
-}</pre>
-</div>
-</div>
-</li>
-<li>
-<p>En la configuración de jest de package.json:</p>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">...
-  "jest": {
-    ...
-    "testRegex": [".*\\.spec\\.ts$", ".*\\.steps\\.ts$"], <i class="conum" data-value="1"></i><b>(1)</b>
-...</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Modificamos la expresión regular para que también tome los <code>*.steps.ts</code></td>
-</tr>
-</table>
-</div>
-</li>
-<li>
-<p>En la configuración scripts de package.json</p>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">...
-  "scripts": {
-    ...
-    "test:bdd": "jest --config ./test/jest-bdd.json" <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Creamos una nueva entrada para ejecutar sólo los tests BDD</td>
-</tr>
-</table>
-</div>
-</li>
-<li>
-<p>Definición de la feature y escenario en test/features/hello.feature</p>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="txt" class="language-txt hljs">Feature: Logging in
-
-    Scenario: Entering a correct password
-        Given I have previously created a password
-        When I enter my password correctly
-        Then I should be granted access</code></pre>
-</div>
-</div>
-</li>
-<li>
-<p>Código base de los pasos del test</p>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">// logging-in.steps.js
-
-import { defineFeature, loadFeature } from 'jest-cucumber';
-
-const feature = loadFeature('test/features/hello.feature'); <i class="conum" data-value="1"></i><b>(1)</b>
-
-defineFeature(feature, (test) =&gt; { <i class="conum" data-value="2"></i><b>(2)</b>
-  test('Entering a correct password', ({ given, when, then }) =&gt; {
-    given('I have previously created a password', () =&gt; {});
-
-    when('I enter my password correctly', () =&gt; {});
-
-    then('I should be granted access', () =&gt; {});
-  });
-});</code></pre>
-</div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Referencia al archivo de la especificación Gherkin</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Código generado automáticamente (Ver nota de información)</td>
-</tr>
-</table>
-</div>
-</li>
-</ul>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Instalando en Visual Studio Code la extensión <code>Jest-cucumber code generator</code> se activa una opción en el menú emergente que se activa al seleccionar un escenario completo de un archivo <code>.feature</code>.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Otras extesiones interesantes para Visual Studio Code:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Cucumber (Gherkin) Full Support</p>
-</li>
-<li>
-<p>Snippets and Syntax Highlight for Gherkin (Cucumber)</p>
-</li>
-</ul>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Para ejecutar todos los tests (unitarios y BDD): <code>npm test</code></p>
-</li>
-<li>
-<p>Para ejecutar sólo los tests BDD: <code>npm run test:bdd</code></p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Enlace: <a href="https://github.com/bencompton/jest-cucumber#readme" class="bare">https://github.com/bencompton/jest-cucumber#readme</a></p>
 </div>
 </div>
 </div>
@@ -1400,7 +1263,7 @@ defineFeature(feature, (test) =&gt; { <i class="conum" data-value="2"></i><b>(2)
 <h2 id="truecaso-de-uso-catálogo-de-productos"><a class="anchor" href="#truecaso-de-uso-catálogo-de-productos"></a>6. Caso de uso. Catálogo de productos</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Para ilustrar los tests unitarios y de integración en este tutorial, así como el testing de contoladores, servicios y uso de mocks, vamos a desarrollar un caso de uso sobre un API para un catálogo ficticio de productos. La API ofrecerá los endpoints para las operaciones básicas de crear un producto, obtener el listado de productos, obtener un producto a partir de su id, modificar y eliminar un producto.</p>
+<p>Para ilustrar los tests unitarios y de integración en este tutorial, así como el testing de controladores, servicios y uso de mocks, vamos a desarrollar un caso de uso sobre un API para un catálogo ficticio de productos. La API ofrecerá los endpoints para las operaciones básicas de crear un producto, obtener el listado de productos, obtener un producto a partir de su id, modificar y eliminar un producto.</p>
 </div>
 <div class="paragraph">
 <p>Para no complicar demasiado el ejemplo pero que también dé juego, de cada producto se guarda:</p>
@@ -1408,27 +1271,27 @@ defineFeature(feature, (test) =&gt; { <i class="conum" data-value="2"></i><b>(2)
 <div class="ulist">
 <ul>
 <li>
-<p>id: numérico</p>
+<p><code>id</code>: numérico</p>
 </li>
 <li>
-<p>name: string</p>
+<p><code>name</code>: string</p>
 </li>
 <li>
-<p>brand: string</p>
+<p><code>brand</code>: string</p>
 </li>
 <li>
-<p>category: string</p>
+<p><code>category</code>: string</p>
 </li>
 <li>
-<p>price: numérico</p>
+<p><code>price</code>: numérico</p>
 </li>
 <li>
-<p>url: string</p>
+<p><code>url</code>: string</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Partimos de un <a href="https://github.com/ualmtorres/testing-product-catalog/tree/base">proyecto creado</a> y disponible en GitHub (rama <code>base</code>). Para más información sobre cómo crear y configurar el proyecto de este caso de uso consultar el <a href="#Anexo. Configuración inicial del proyecto">[Anexo. Configuración inicial del proyecto]</a></p>
+<p>Partimos de un <a href="https://github.com/ualmtorres/testing-product-catalog/tree/base">proyecto creado</a> y disponible en GitHub (rama <code>base</code>). Para más información sobre cómo crear y configurar el proyecto de este caso de uso consultar el <a href="#trueanexo-i-configuración-inicial-del-proyecto">Anexo I. Configuración inicial del proyecto</a></p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1453,7 +1316,7 @@ defineFeature(feature, (test) =&gt; { <i class="conum" data-value="2"></i><b>(2)
 <div class="content">
 <div class="title">Configuración de un servidor MySQL</div>
 <div class="paragraph">
-<p>Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que complicarnos con instalaciones y no acoplar el desarrollo a nuestro equipo utilizaremos una imagen Docker de MySQL 5.7. Crearemos una base de datos denominada tutorial. Usaremos las cuenta <code>root</code> con el password <code>secret</code></p>
+<p>Para trabajar localmente con persistencia necesitamos una base de datos a la que conectarnos. Para no tener que complicarnos con instalaciones y no acoplar el desarrollo a nuestro equipo utilizaremos una imagen Docker de MySQL 5.7. Crearemos una base de datos denominada <code>testing</code>. Usaremos las cuenta <code>root</code> con el password <code>secret</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1469,7 +1332,7 @@ defineFeature(feature, (test) =&gt; { <i class="conum" data-value="2"></i><b>(2)
 </table>
 </div>
 <div class="paragraph">
-<p>Tras unos instantes (algo más si la imagen de MySQL 5.7 no está descargada en el equipo) habrá un contenedor en ejecución con el nombre <code>testing_mysql</code>. Iniciaremos una sesión interactiva para crear una base de datos, a la que denominaremos tutorial</p>
+<p>Tras unos instantes (algo más si la imagen de MySQL 5.7 no está descargada en el registro local de imágenes Docker) habrá un contenedor en ejecución con el nombre <code>testing_mysql</code>. Iniciaremos una sesión interactiva para crear una base de datos, a la que denominaremos <code>testing</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1509,16 +1372,16 @@ Query OK, 1 row affected (0.00 sec)</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Tras unos instantes comprobamos que se han ejecutado tres suites de tests, pero sólo uno se ha ejecutado con éxito, el de <code>src/app.controller.spec.ts</code>. Sin embargo, ni los tests del servicio (<code>src/product/product.service.spec.ts</code>) ni el del controlador (<code>src/product/product.controller.spec.ts</code>) han tenido éxito. En ambos casos nos indica que no están definido su <em>provider</em>.</p>
+<p>Tras unos instantes comprobamos que se han ejecutado tres suites de tests, pero sólo una se ha ejecutado con éxito, la de <code>src/app.controller.spec.ts</code>. Sin embargo, ni los tests del servicio (<code>src/product/product.service.spec.ts</code>), ni los del controlador (<code>src/product/product.controller.spec.ts</code>) han tenido éxito. En ambos casos nos indica que no están definido su <em>provider</em>.</p>
 </div>
 <div class="paragraph">
-<p>A continuación veremos cómo resolver estos problemas y lo haremos desde el controlador hacia adentro. Primero haremos los tests del controlador y después el del servicio. Finalmente, dedicaremos una sección a realizar los tests de integración.</p>
+<p>A continuación veremos cómo resolver estos problemas y lo haremos desde el controlador hacia adentro. Es decir, primero haremos los tests unitarios del controlador y después los tests unitarios del servicio. Finalmente, dedicaremos una sección a realizar los tests de integración.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="truetests-del-controlador"><a class="anchor" href="#truetests-del-controlador"></a>6.2. Tests del controlador</h3>
 <div class="paragraph">
-<p>Los tests del controlador fallan porque mientras que en el arranque de la aplicación se cargan los módulos correctamente, al ejecutar los tests se utiliza módulos diferentes de los del entorno de ejecución. Y lo importante, <strong>inicialmente esos módulos no pueden resolver sus dependencias.</strong>. Concretamente, lo que está ocurriendo es que el controlador no puede resolver en el entorno de pruebas su dependencia de <code>ProductService</code></p>
+<p>Los tests del controlador fallan porque mientras que en el arranque de la aplicación se cargan los módulos correctamente, al ejecutar los tests se utiliza módulos diferentes de los del entorno de ejecución. Y lo importante, <strong>inicialmente esos módulos no pueden resolver sus dependencias</strong>. Concretamente, lo que está ocurriendo es que el controlador no puede resolver en el entorno de pruebas su dependencia de <code>ProductService</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1533,12 +1396,12 @@ export class ProductController {
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Dependencia respecto a <code>ProductService</code></td>
+<td>Dependencia del controlador respecto a <code>ProductService</code></td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>En el código siguiente del test del controlador vemos que dentro de <code>beforeEach</code> se usa la clase <code>Test</code> y un método <code>createTestingModule</code>. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. <code>imports</code>, <code>providers</code>, <code>controllers</code> &#8230;&#8203;). Tras definir el nuevo módulo (el de testing) y llamar al método <code>compile</code> se crea el módulo con sus dependencias similar a los módulos creados para el entorno de ejecución.</p>
+<p>En el código siguiente del test del controlador, generado por el CLI de NestJS al generar el controlador, vemos que dentro de <code>beforeEach</code> se usa la clase <code>Test</code> y un método <code>createTestingModule</code>. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. <code>imports</code>, <code>providers</code>, <code>controllers</code> &#8230;&#8203;). Tras definir el nuevo módulo (el de testing) y llamar al método <code>compile</code> se crea el módulo para testing con sus dependencias similar a los módulos creados para el entorno de ejecución.</p>
 </div>
 <div class="paragraph">
 <p>Archivo <code>src/product/product.controller.spec.ts</code></p>
@@ -1644,7 +1507,7 @@ describe('ProductController', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>Servicio que sustituye (mockea) al original</td>
+<td>Servicio que sustituye (mockea) al original. Usamos el creado en paso 1.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
@@ -1653,12 +1516,28 @@ describe('ProductController', () =&gt; {
 </table>
 </div>
 <div class="paragraph">
-<p>Lanzaremos ahora los tests, pero nos ceñiremos sólo a los tests del controlador y además lo haremos en modo <code>watch</code>. Así, cada vez que hagamos cambios sobre el código se volverán a ejecutar los tests.</p>
+<p>Lanzaremos ahora los tests unitarios, pero no los lanzaremos todos como hacíamos antes al ejecutar <code>npm run test</code>. En este proceso paulatino de creación de los tests unitarios nos ceñiremos sólo a los tests del controlador y además lo haremos en modo <code>watch</code>. Así, cada vez que hagamos cambios sobre el código se volverán a ejecutar los tests.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">$ npm run test:watch</code></pre>
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">$ npm run test:watch
+
+Watch Usage
+ › Press a to run all tests.
+ › Press f to run only failed tests.
+ › Press p to filter by a filename regex pattern. <i class="conum" data-value="1"></i><b>(1)</b>
+ › Press t to filter by a test name regex pattern.
+ › Press q to quit watch mode.
+ › Press Enter to trigger a test run.</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Para ejecutar los tests de los nombres de archivo de acuerdo a una expresión regular</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Pulsaremos <code>p</code> para indicar que sólo se pasen los tests a los archivos que sigan un patrón concreto de nombre de archivo. Introduciremos <code>product.controller</code> como patrón. Con esto, se pasarán los tests sólo al controlador y obtendremos un resultado como el siguiente:</p>
@@ -1678,17 +1557,20 @@ Ran all test suites matching /product.controller/i.
 Watch Usage: Press w to show more.</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Objetivo cumplido!! Hemos conseguido hacer que desaparezca el error al ejecutar el test del conrtrolador. A continuación, comenzaremos a añadirle tests.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="truesegundo-paso-añadir-tests"><a class="anchor" href="#truesegundo-paso-añadir-tests"></a>6.2.2. Segundo paso. Añadir tests</h4>
 <div class="paragraph">
-<p>Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del servicio, vamos a ir creando tests del controlador. Comenzaremos por el de creación de productos añadiendo este test después del test <code>should be defined</code>. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un id (da igual el que sea) y el resto de campos coincidirán con los del DTO de creación de producto.</p>
+<p>Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del servicio, vamos a ir creando tests del controlador. Comenzaremos por el de creación de productos añadiendo este test después del test <code>should be defined</code>. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un <code>id</code> (da igual el que sea. En el código de producción sería el <code>id</code> que generaría la base de datos) y el resto de campos coincidirán con los del DTO de creación de producto.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   it('should create a product', () =&gt; {
-    const createProductDto = {
+    const createProductDto = { <i class="conum" data-value="1"></i><b>(1)</b>
       name: 'the-product',
       brand: 'the-brand',
       category: 'the-category',
@@ -1696,7 +1578,7 @@ Watch Usage: Press w to show more.</code></pre>
       url: 'http://product.com/the-product',
     };
 
-    expect(controller.create(createProductDto)).toEqual({
+    expect(controller.create(createProductDto)).toEqual({ <i class="conum" data-value="2"></i><b>(2)</b>
       id: expect.any(Number),
       ...createProductDto,
     });
@@ -1704,8 +1586,20 @@ Watch Usage: Press w to show more.</code></pre>
 ...</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>DTO del producto a crear</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Probamos que el producto creado consiste en un <code>id</code> junto a los datos proporcionados en el DTO para crear el producto</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>Tras guardar los cambios, como estamos en modo <code>watch</code> se volverán a pasar los tests y nos da un fallo: el método create no existe en el mock del servicio, tal y como se muestra a continuación:</p>
+<p>Tras guardar los cambios, como estamos en modo <code>watch</code> se volverán a pasar los tests y nos da un fallo: el método <code>create</code> no existe en el mock del servicio, tal y como se muestra a continuación:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1741,7 +1635,27 @@ Watch Usage: Press w to show more.</code></pre>
 </table>
 </div>
 <div class="paragraph">
-<p>El error se debe a que en la sección anterior creamos el mock del servicio del producto pero lo creamos vacío, sin ningún método. A continuación crearemos la implementación que mockea al método <code>create</code> del servicio. Se limitará a tomar un DTO y devolver un objeto con un <code>id</code> aleatorio y el DTO.</p>
+<p>El error se debe a que en la sección anterior creamos el mock del servicio del producto, pero lo creamos vacío, sin ningún método.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+describe('ProductController', () =&gt; {
+  let controller: ProductController;
+  let mockProductService = {}; <i class="conum" data-value="1"></i><b>(1)</b>
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Mock del servicio creado vacío inicialmente</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A continuación crearemos la implementación que mockea al método <code>create</code> del servicio. Se limitará a tomar un DTO y devolver un objeto con un <code>id</code> aleatorio (simulando lo que haría la base de datos) y el DTO.</p>
 </div>
 <div class="paragraph">
 <p>Archivo <code>src/product/product.controller.spec.ts</code></p>
@@ -1802,7 +1716,7 @@ Time:        4.69 s</code></pre>
 <code>jest.fn()</code> crea una función de mock y opcionalmente puede tomar una implementación como parámetro.</p>
 </div>
 <div class="paragraph">
-<p>Las funciones de mock tienen la propiedad <code>mock</code> que permite, entre otros, conocer los argumentos con los que fue llamada, obtener las veces que fue llamada, y ver el valor de los argumentos en una llamada concreta, por ejemplo, en la tercera vez que fue llamada.</p>
+<p>Las funciones de mock tienen la propiedad <code>mock</code> que permite, entre otros, conocer los argumentos con los que fue llamada, obtener la cantidad de veces que fue llamada, y ver el valor de los argumentos en una llamada concreta, por ejemplo, en la tercera vez que fue llamada.</p>
 </div>
 <div class="paragraph">
 <p>También tiene métodos interesantes como los siguientes:</p>
@@ -1858,11 +1772,11 @@ Time:        4.69 s</code></pre>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>id del producto a modificar</td>
+<td><code>id</code> del producto a modificar</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>Se espera que resulltado de actualizar el producto sea el producto con el id y los datos actualizados</td>
+<td>Se espera que resultado de actualizar el producto sea el producto con el <code>id</code> y los datos actualizados</td>
 </tr>
 </table>
 </div>
@@ -1974,16 +1888,16 @@ Time:        4.542 s, estimated 6 s</code></pre>
 <p>Al guardar, se volverán a pasar los tests y el cambio introducido funcionará correctamente, lo que permitirá validar que el controlador hace bien su trabajo.</p>
 </div>
 <div class="paragraph">
-<p>Ahora se trataría de ir añadiendo los tests que faltan. Para no extender el tutorial, se dejan fuera del tutorial.</p>
+<p>Ahora, y de acuerdo con el informe de cobertura de tests, se trataría de ir añadiendo los tests que faltan (mostrar productos, mostrar un producto y eliminar un producto). Para no extender el tutorial, se dejan fuera del tutorial.</p>
 </div>
 </div>
 <div class="sect3">
 <h4 id="truetercer-paso-llevar-el-mock-del-servicio-a-una-clase"><a class="anchor" href="#truetercer-paso-llevar-el-mock-del-servicio-a-una-clase"></a>6.2.3. Tercer paso. Llevar el mock del servicio a una clase</h4>
 <div class="paragraph">
-<p>Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como sacar el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de <code>mockProductService</code> a sendos métodos en una clase nueva.</p>
+<p>Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de <code>mockProductService</code> a métodos en una clase nueva.</p>
 </div>
 <div class="paragraph">
-<p>Partimos del servicio mockeado en la propia clase y tenía esta forma:</p>
+<p>Partimos del servicio mockeado en la propia clase, que recordamos que tenía esta forma:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2005,8 +1919,20 @@ Time:        4.542 s, estimated 6 s</code></pre>
 ...</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Función de mock para crear productos</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Función de mock para modificar productos</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>Comenzamos generando la clase con el CLI de NestJS</p>
+<p>Comenzamos generando la clase que actuará como mock del servicio con el CLI de NestJS. La situaremos en la misma carpeta que el resto de componentes del producto.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2030,7 +1956,7 @@ Time:        4.542 s, estimated 6 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Crearemos dos métodos <code>create</code> y <code>update</code> en los que incluiremos en código de mocking que ya teníamos renombrando los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el servicio real.</p>
+<p>Ahora se trata de traer a esta nueva clase de mock el código que había en los métodos <code>create</code> y <code>update</code> del objeto <code>mockProductService</code> en el archivo de testing del controlador. Para ello, crearemos en la clase dos métodos <code>create</code> y <code>update</code> en los que incluiremos el código de mocking que ya teníamos. No obstante, renombraremos los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el servicio real.</p>
 </div>
 <div class="paragraph">
 <p>La clase que mockea al servicio ahora quedará así:</p>
@@ -2043,17 +1969,17 @@ import { UpdateProductDto } from './dto/update-product.dto';
 export class ProductServiceMock {
   async create(createProductDto: CreateProductDto): Promise&lt;Product&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
     return Promise.resolve({
-      id: Math.random() * (1000 - 1) + 1,
+      id: Math.random() * (1000 - 1) + 1, <i class="conum" data-value="2"></i><b>(2)</b>
       ...createProductDto,
     });
   }
 
-  async update( <i class="conum" data-value="2"></i><b>(2)</b>
+  async update( <i class="conum" data-value="3"></i><b>(3)</b>
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise&lt;Product&gt; {
     return Promise.resolve({
-      id: id,
+      id: id, <i class="conum" data-value="4"></i><b>(4)</b>
       ...updateProductDto,
     });
   }
@@ -2068,20 +1994,45 @@ export class ProductServiceMock {
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Código traído desde <code>mockProductService</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
 <td>Método <code>update</code> mockeado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Código traído desde <code>mockProductService</code></td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>Una vez que disponemos de la clase que mockea el servicio, haremos los cambios en el archivo de tests del controlador para que use esta clase mockeada en lugar de la variable <code>mockProductService</code>, que es que la que contenía la implementación de los mocks. Hay que hacer varios cambios:</p>
+<p>Una vez que disponemos de la clase que mockea el servicio, <strong>haremos los cambios en el archivo de tests del controlador para que use esta clase mockeada en lugar de la variable <code>mockProductService</code></strong>, que es la que contenía la implementación de los mocks.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>La inyección de dependencias de NestJS permite que podamos sustituir el servicio que se usa para ejecutar los tests. El uso de mocks permite probar sólo una parte del código haciendo que el resto ofrezca valores falseados/generados. Esto, además de permitirnos un mayor control en el proceso de testing, acelera la ejecución de los tests, ya que el servicio ya no tiene que usar la base de datos (que siempre ofrece mayor latencia) para realizar su trabajo en el testing del controlador.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Hay que hacer varios cambios:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Declarar una variable <code>service</code> de tipo `ProductService</p>
+<p>Declarar una variable <code>service</code> de tipo <code>ProductService</code></p>
 </li>
 <li>
-<p>Definir un <code>ProductServiceProvider</code> que mockee el provider ProductService</p>
+<p>Definir un <code>ProductServiceProvider</code> que mockee el provider <code>ProductService</code></p>
 </li>
 <li>
 <p>Incorporar el <code>ProductServiceProvider</code> a la lista de providers del módulo de testing</p>
@@ -2090,7 +2041,7 @@ export class ProductServiceMock {
 <p>Usar la clase de mock para construir el módulo de testing</p>
 </li>
 <li>
-<p>Inicializar <code>service</code> al servicio del producto. Como <code>ProductService</code> está mockeado realmente no usará la implementación original</p>
+<p>Inicializar la variable <code>service</code> al servicio del producto. Como <code>ProductService</code> está mockeado realmente no usará la implementación original</p>
 </li>
 <li>
 <p>Cambiar los tests a asíncronos</p>
@@ -2183,7 +2134,7 @@ describe('ProductController', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td><code>ProductServiceProvider</code> mockea el provider ProductService</td>
+<td><code>ProductServiceProvider</code> mockea el provider <code>ProductService</code></td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
@@ -2191,15 +2142,15 @@ describe('ProductController', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>Inicialización del mock a la clase del mock del servicio</td>
+<td>Inicialización del mock a la clase del mock del servicio (Inyección de dependencias)</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
-<td>Inicialización del servicio al servicio del producto</td>
+<td>Inicialización del servicio al servicio del producto, que está mockeado</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="6"></i><b>6</b></td>
-<td>Caso de prueba asíncrono por el <code>await</code> de métodos en el caso de prueba</td>
+<td>Caso de prueba asíncrono por el <code>await</code> en métodos dentrol del caso de prueba</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="7"></i><b>7</b></td>
@@ -2207,7 +2158,7 @@ describe('ProductController', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="8"></i><b>8</b></td>
-<td>Caso de prueba asíncrono por el <code>await</code> de métodos en el caso de prueba</td>
+<td>Caso de prueba asíncrono por el <code>await</code> en métodos dentro del caso de prueba</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="9"></i><b>9</b></td>
@@ -2227,6 +2178,59 @@ describe('ProductController', () =&gt; {
 </tr>
 </table>
 </div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title"><code>jest.spyOn()</code></div>
+<div class="paragraph">
+<p><code>jest.spyOn()</code> crea una función de mock similar a <code>jest.fn()</code> pero además, monitoriza/fisgonea las llamadas al método que se le proporcione.</p>
+</div>
+<div class="paragraph">
+<p><code>jest.spyOn(objeto, nombre-de-método-a-espiar)</code> devuelve una función que se comporta como espía monitorizando las llamadas que se realicen al método del objeto que se pasen como argumentos.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+let service: ProductService; <i class="conum" data-value="1"></i><b>(1)</b>
+...
+service = module.get&lt;ProductService&gt;(ProductService); <i class="conum" data-value="2"></i><b>(2)</b>
+...
+const updateSpy = jest.spyOn(service, 'update'); <i class="conum" data-value="3"></i><b>(3)</b>
+controller.update(productId, updateProductDto); <i class="conum" data-value="4"></i><b>(4)</b>
+expect(updateSpy).toHaveBeenCalledWith(productId, updateProductDto); <i class="conum" data-value="5"></i><b>(5)</b>
+
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Declaración de un objeto <code>service</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Inicialización del objeto <code>service</code> (a la clase del servicio)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Espiar el método <code>update</code> del objeto <code>service</code>. Ahora, <code>updateSpy</code>
+monitoriza cada una de las llamadas que se hagan al método <code>update</code> del objeto <code>service</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Llamar al método espiado (<code>update</code>)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Comprobar a través del espía (<code>updateSpy</code>) los argumentos con los que ha sido llamada la función espiada.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>La función espía intercepta/espía las llamadas que se hacen a un método de un objeto. Haciendo la analogía, el método <code>update</code> del objeto <code>service</code> está <em>pinchado</em>, como se <em>pinchan</em> los teléfonos en espionaje.</p>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -2243,7 +2247,7 @@ describe('ProductController', () =&gt; {
 </div>
 </div>
 <div class="paragraph">
-<p>El resultado de los tests nos devolverá que no se pueden resolver las dependencias de <code>ProductService</code>. Esto se debe a que tiene una dependencia con el repositorio y no se puede resolver en el entorno de pruebas.</p>
+<p>El resultado de los tests nos devolverá que no se pueden resolver las dependencias de <code>ProductService</code>. Esto se debe a que <code>ProductService</code> tiene una dependencia con el repositorio y no se puede resolver en el entorno de pruebas.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2260,12 +2264,12 @@ export class ProductService {
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Dependencia respecto del repositorio</td>
+<td>Dependencia del servicio respecto del repositorio</td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>De foma análoga a los tests del controlador, en el código siguiente del test del servicio vemos que dentro de <code>beforeEach</code> se usa la clase <code>Test</code> y un método <code>createTestingModule</code>. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. imports, providers, controllers …​). Tras definir el nuevo módulo (el de testing) y llamar al método compile se crea el módulo con sus dependencias similar a los módulos creados para el entorno de ejecución.</p>
+<p>De foma análoga a los tests del controlador, en el código siguiente del test del servicio, generado por el CLI de NestJS al generar el servicio, vemos que dentro de <code>beforeEach</code> se usa la clase <code>Test</code> y un método <code>createTestingModule</code>. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. <code>imports</code>, <code>providers</code>, <code>controllers</code>, …​). Tras definir el nuevo módulo (el de testing) y llamar al método <code>compile</code> se crea el módulo con sus dependencias similar a los módulos creados para el entorno de ejecución.</p>
 </div>
 <div class="paragraph">
 <p>Archivo <code>src/product/product.service.spec.ts</code></p>
@@ -2308,7 +2312,7 @@ describe('ProductService', () =&gt; {
 <p>Al igual que hicimos con el controlador, seguiremos un enfoque progresivo para conseguir que nuestros tests funcionen. Se trata de ayudar a que en primer lugar desaparezcan los errores de las pruebas del servicio. Posteriormente, se irán refinando los tests.</p>
 </div>
 <div class="paragraph">
-<p>El test del servicio falla porque el servicio no es capaz de resolver sus dependencias. Lo que haremos es sustituir el repositorio original por un repositorio de uso exclusivo en testing. Con esto, conseguiremos probar únicamente el servicio, aislándolo del repositorio, que es la premisa de los tests unitarios: probar sólo una cosa en cada test.</p>
+<p>Inicialmente, el test del servicio falla porque el servicio no es capaz de resolver sus dependencias. Lo que haremos es sustituir el repositorio original por un repositorio de uso exclusivo en testing. Con esto, conseguiremos probar únicamente el servicio, aislándolo del repositorio, que es la premisa de los tests unitarios: probar sólo una cosa en cada test.</p>
 </div>
 <div class="paragraph">
 <p>Pasos:</p>
@@ -2370,7 +2374,7 @@ describe('ProductService', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>Repositorio que sustituye (mockea) al original</td>
+<td>Repositorio que sustituye (mockea) al original. Usamos el creado en el paso 1</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
@@ -2397,13 +2401,13 @@ Time:        6.522 s</code></pre>
 <div class="sect3">
 <h4 id="truesegundo-paso-añadir-tests-2"><a class="anchor" href="#truesegundo-paso-añadir-tests-2"></a>6.3.2. Segundo paso. Añadir tests</h4>
 <div class="paragraph">
-<p>Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del repositorio, vamos a ir creando tests del servicio. Comenzaremos por el de creación de productos añadiendo este test después del test <code>should be defined</code>. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un id (da igual el que sea) y el resto de campos coincidirán con los del DTO de creación de producto.</p>
+<p>Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del repositorio, vamos a ir creando tests del servicio. Comenzaremos por el de creación de productos añadiendo este test después del test <code>should be defined</code>. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un id (da igual el que sea. En el código de producción sería el <code>id</code> que generaría la base de datos) y el resto de campos coincidirán con los del DTO de creación de producto.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
   it('should create a product', async () =&gt; {
-    const createProductDto = {
+    const createProductDto = { <i class="conum" data-value="1"></i><b>(1)</b>
       name: 'the-product',
       brand: 'the-brand',
       category: 'the-category',
@@ -2411,13 +2415,25 @@ Time:        6.522 s</code></pre>
       url: 'http://product.com/the-product',
     };
 
-    expect(await service.create(createProductDto)).toEqual({
+    expect(await service.create(createProductDto)).toEqual({ <i class="conum" data-value="2"></i><b>(2)</b>
       id: expect.any(Number),
       ...createProductDto,
     });
   });
 ...</code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>DTO del producto a crear</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Probamos que el producto creado consiste en un <code>id</code> junto a los datos proporcionados en el DTO para crear el producto</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Tras guardar los cambios, como estamos en modo <code>watch</code> se volverán a pasar los tests y nos da un fallo: el método <code>create</code> no existe en el mock del repositorio, tal y como se muestra a continuación:</p>
@@ -2455,7 +2471,27 @@ Time:        6.522 s</code></pre>
 </table>
 </div>
 <div class="paragraph">
-<p>El error se debe a que en la sección anterior creamos el mock del repositorio del producto pero lo creamos vacío, sin ningún método. A continuación crearemos la implementación que mockea al método <code>create</code> del repositorio. Se limitará a tomar un DTO y devolver un objeto con un <code>id</code> aleatorio y el DTO.</p>
+<p>El error se debe a que en la sección anterior creamos el mock del repositorio del producto pero lo creamos vacío, sin ningún método.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">...
+describe('ProductService', () =&gt; {
+  let service: ProductService;
+  let mockProductsRepository = {}; <i class="conum" data-value="1"></i><b>(1)</b>
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Mock del repositorio creado vacío inicialmente</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>A continuación crearemos la implementación que mockea al método <code>create</code> del repositorio. Se limitará a tomar un DTO y devolver un objeto con un <code>id</code> aleatorio  (simulando lo que haría la base de datos) y el DTO.</p>
 </div>
 <div class="paragraph">
 <p>Archivo <code>src/product/product.service.spec.ts</code></p>
@@ -2493,7 +2529,7 @@ describe('ProductService', () =&gt; {
 </table>
 </div>
 <div class="paragraph">
-<p>Una vez realizados estos cambios, el test de crear un producto siguen sin pasar correctamente. Nos indica que el método <code>save</code> no está implementado en el mock del repositorio. Esto se debe a que hay una referencia explícita al método <code>save</code> en la implementación del método <code>create</code> en el servicio.</p>
+<p>Una vez realizados estos cambios, el test de crear un producto sigue sin pasar correctamente. Nos indica que el método <code>save</code> no está implementado en el mock del repositorio. Esto se debe a que hay una referencia explícita al método <code>save</code> en la implementación del método <code>create</code> en el servicio.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2549,7 +2585,7 @@ describe('ProductService', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>id aleatorio</td>
+<td><code>id</code> aleatorio</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
@@ -2574,13 +2610,13 @@ Time:        4.233 s, estimated 6 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Ahora se trataría de ir añadiendo los tests que faltan. Para no extender el tutorial, se dejan fuera del tutorial.</p>
+<p>Ahora se trataría de ir añadiendo los tests que faltan (mostrar productos, mostrar un producto y eliminar un producto). Para no extender el tutorial, se dejan fuera del tutorial.</p>
 </div>
 </div>
 <div class="sect3">
 <h4 id="truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase"><a class="anchor" href="#truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase"></a>6.3.3. Tercer paso. Llevar el mock del repositorio a una clase</h4>
 <div class="paragraph">
-<p>Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos como sacar el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de mockProductsRepository a sendos métodos en una clase nueva.</p>
+<p>Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de <code>mockProductsRepository</code> a métodos en una clase nueva.</p>
 </div>
 <div class="paragraph">
 <p>Partimos del repositorio mockeado en la propia clase y tenía esta forma:</p>
@@ -2642,7 +2678,7 @@ Time:        4.233 s, estimated 6 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Crearemos dos métodos <code>create</code> y <code>save</code> en los que incluiremos en código de mocking que ya teníamos renombrando los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hace el repositorio real.</p>
+<p>Ahora se trata de traer a esta nueva clase de mock el código que había en los métodos <code>create</code> y <code>save</code> del objeto <code>ProductServiceMock</code> en el archivo de testing del servicio. Para ello, crearemos en la clase dos métodos <code>create</code> y <code>save</code> en los que incluiremos el código de mocking que ya teníamos. No obstante, renombraremos los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el repositorio real.</p>
 </div>
 <div class="paragraph">
 <p>La clase que mockea al repositorio ahora quedará así:</p>
@@ -2652,15 +2688,15 @@ Time:        4.233 s, estimated 6 s</code></pre>
 <pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 export class ProductRepositoryMock {
-  create(createProductDto: CreateProductDto): Promise&lt;Product&gt; {
+  create(createProductDto: CreateProductDto): Promise&lt;Product&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
     return Promise.resolve({
-      id: Math.random() * (1000 - 1) + 1,
+      id: Math.random() * (1000 - 1) + 1, <i class="conum" data-value="2"></i><b>(2)</b>
       ...createProductDto,
     });
   }
-  save(product: Product): Promise&lt;Product&gt; {
+  save(product: Product): Promise&lt;Product&gt; { <i class="conum" data-value="3"></i><b>(3)</b>
     return Promise.resolve({
-      id: Math.random() * (1000 - 1) + 1,
+      id: Math.random() * (1000 - 1) + 1, <i class="conum" data-value="4"></i><b>(4)</b>
       ...product,
     });
   }
@@ -2675,12 +2711,20 @@ export class ProductRepositoryMock {
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Código traído desde <code>mockProductsRepository</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
 <td>Método <code>save</code> mockeado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Código traído desde <code>mockProductsRepository</code></td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>Una vez que disponemos de la clase que mockea el repositorio, haremos los cambios en el archivo de tests del servicio para que use esta clase mockeada en lugar de la variable <code>mockProductsRepository</code>, que es la que contenía la implementación de los mocks. Basta con:</p>
+<p>Una vez que disponemos de la clase que mockea el repositorio, <strong>haremos los cambios en el archivo de tests del servicio para que use esta clase mockeada en lugar de la variable <code>mockProductsRepository</code></strong>, que es la que contenía la implementación de los mocks. Basta con:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -2749,12 +2793,26 @@ describe('ProductService', () =&gt; {
 </tr>
 </table>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>La inyección de dependencias de NestJS permite que podamos sustituir el repositorio que se usa para ejecutar los tests. El uso de mocks permite probar sólo una parte del código haciendo que el resto ofrezca valores falseados/generados. Esto, además de permitirnos un mayor control en el proceso de testing, acelera la ejecución de los tests, ya que el servicio ya no tiene que usar la base de datos (que siempre ofrece mayor latencia) para realizar su trabajo.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="truetests-end-to-end"><a class="anchor" href="#truetests-end-to-end"></a>6.4. Tests end to end</h3>
 <div class="paragraph">
-<p>Este tipo de tests se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto podremos realizar la prueba de cada endpoint de la API. NestJS usa <a href="https://github.com/visionmedia/supertest">Supertest</a> para simular las llamadas HTTP.</p>
+<p>Este tipo de tests se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto podremos realizar la prueba de cada endpoint de la API. Para simular las llamadas HTTP NestJS usa <a href="https://github.com/visionmedia/supertest">Supertest</a> .</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -2851,7 +2909,7 @@ describe('ProductService', () =&gt; {
 </div>
 </div>
 <div class="paragraph">
-<p>El error indica que el módulo de testing creado para la ocasión no es capaz de resolver las dependencias que hay sobre el repositorio de <code>Product</code>. De forma análoga a como hemos hecho con los tests del controlador y del servicio, hay que añadir un mock que permita resolver la dependencia existente. Lo más inmediato es hacer lo mínimo para que el test deje de ejecutarse con errores.</p>
+<p>El error indica que el módulo de testing creado para la ocasión no es capaz de resolver las dependencias que hay sobre el repositorio de <code>Product</code>. De forma análoga a como hemos hecho con los tests del controlador y del servicio, hay que añadir un mock que permita resolver la dependencia existente. Lo más inmediato es hacer lo mínimo para que el test deje de ejecutarse con errores. A continuación se muestran los cambios realizados.</p>
 </div>
 <div class="paragraph">
 <p>Archivo <code>test/product.e2e-spec.ts</code></p>
@@ -2899,7 +2957,7 @@ describe('ProductController (e2e)', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Módulo de producto</td>
+<td><strong>Módulo de producto</strong>. No olvidar cambiarlo. Al haber copiado el archivo de tests desde <code>app.e2e-spec.ts</code>, el valor viene a <code>AppModule</code></td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
@@ -2907,7 +2965,7 @@ describe('ProductController (e2e)', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>Repositorio que sustituye (mockea) al original</td>
+<td>Repositorio que sustituye (mockea) al original. Usamos el creado en paso 1.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
@@ -2915,7 +2973,7 @@ describe('ProductController (e2e)', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="6"></i><b>6</b></td>
-<td>Test a ejecutar. Comprueba que en la ruta raiz (<code>/product</code>) se devuelve un código de estado HTTP de 200</td>
+<td>Test a ejecutar. Comprueba que en la ruta raiz del controlador (<code>/product</code>) se devuelve un código de estado HTTP de 200</td>
 </tr>
 </table>
 </div>
@@ -2926,7 +2984,7 @@ describe('ProductController (e2e)', () =&gt; {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  test/product.e2e-spec.ts
   ProductController (e2e)
-    ✓ / (GET) (421 ms)
+    ✓ /product (GET) (421 ms)
 
 A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks.
 Test Suites: 1 passed, 1 total
@@ -2942,7 +3000,7 @@ Time:        5.513 s</code></pre>
 <div class="sect3">
 <h4 id="truesegundo-paso-añadir-tests-3"><a class="anchor" href="#truesegundo-paso-añadir-tests-3"></a>6.4.3. Segundo paso. Añadir tests</h4>
 <div class="paragraph">
-<p>Comenzamos cambiando el único test existente siguendo los pasos siguientes:</p>
+<p>Comenzamos cambiando el único test existente siguiendo los pasos siguientes:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -3154,7 +3212,7 @@ describe('ProductController (e2e)', () =&gt; {
       .expect(mockProducts);
   });
 
-  it('/users (POST)', () =&gt; { <i class="conum" data-value="3"></i><b>(3)</b>
+  it('/product (POST)', () =&gt; { <i class="conum" data-value="3"></i><b>(3)</b>
     const createProductDto = {
       name: 'the-product',
       brand: 'the-brand',
@@ -3209,7 +3267,7 @@ describe('ProductController (e2e)', () =&gt; {
 </tr>
 <tr>
 <td><i class="conum" data-value="7"></i><b>7</b></td>
-<td>Comprobar que el devuelve un objeto con los datos de creación y un <code>id</code> generado</td>
+<td>Comprobar que devuelve un objeto con los datos de creación y un <code>id</code> generado</td>
 </tr>
 </table>
 </div>
@@ -3234,7 +3292,7 @@ Time:        5.623 s, estimated 9 s</code></pre>
 <div class="sect2">
 <h3 id="truecobertura-de-tests-2"><a class="anchor" href="#truecobertura-de-tests-2"></a>6.5. Cobertura de tests</h3>
 <div class="paragraph">
-<p>Tras realizar tests del controlador, del servicio y de integración cabe preguntarse la cobertura de tests que tenemos y cuáles son las partes del código del proyecto que aún están sin probar. Para ello lanzaremos la cobertura de tests con</p>
+<p>Tras realizar los tests del controlador, del servicio y de integración cabe preguntarse la cobertura de tests que tenemos y cuáles son las partes del código del proyecto que aún están sin probar. Para ello lanzaremos la cobertura de tests con</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3281,7 +3339,7 @@ Time:        5.623 s, estimated 9 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Si volvemos a pasar la cobertura de tests, los porcentajes mejoran ya que se ignoran los archivos de módulo que no tienen ninguna prueba sobre ellos. Ahora la cobertura en el código de la carpeta <code>src</code> la pasado de 43.33% a 59.09% y en la de la carpeta <code>src/product</code> ha pasado de 54.9% a 65.11%.</p>
+<p>Si tras retirar los archivos <code>.module.ts</code> del análisis volvemos a pasar la cobertura de tests, los porcentajes mejoran ya que se ignoran los archivos de módulo que no tienen ninguna prueba sobre ellos. Ahora la cobertura en el código de la carpeta <code>src</code> la pasado de 43.33% a 59.09% y en la de la carpeta <code>src/product</code> ha pasado de 54.9% a 65.11%.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -3308,7 +3366,7 @@ Time:        5.623 s, estimated 9 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>La figura nos da una indicación de los métodos en los que deberíamos centrar los esfuerzos de desarrollo de tests. Todo lo que apafece marcado en rojo es código sin tests asociados. Así, deberíamos dirigir el desarrollo de los nuevos tests a los métodos <code>findAll, findOne</code> y <code>remove</code> del controlador.</p>
+<p>La figura nos da una indicación de los métodos en los que deberíamos centrar los esfuerzos de desarrollo de tests. Todo lo que aparece marcado en rojo es código sin tests asociados. Así, deberíamos dirigir el desarrollo de los nuevos tests a los métodos <code>findAll, findOne</code> y <code>remove</code> del controlador.</p>
 </div>
 </div>
 </div>
@@ -3318,7 +3376,7 @@ Time:        5.623 s, estimated 9 s</code></pre>
 <h2 id="trueanexo-i-configuración-inicial-del-proyecto"><a class="anchor" href="#trueanexo-i-configuración-inicial-del-proyecto"></a>Anexo I. Configuración inicial del proyecto</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Para crear ese proyecto recordamos los pasos de su creación. Generaremos también un <em>resource</em> en NestJS para que nos cree el módulo, servicio, controlador, entidad y DTOs. También instalaremos las dependencias de Swagger y TypeORM para MySQL.</p>
+<p>Recordamos los pasos de creación de una API para un proyecto de ejemplo de un catálogo ficticio de productos. Generaremos también un <em>resource</em> en NestJS para que nos cree el módulo, servicio, controlador, entidad y DTOs. También instalaremos las dependencias de Swagger y TypeORM para MySQL.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3404,7 +3462,7 @@ export class Product {
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>El método <code>forRoot()</code> carga la configuración de TypeORM. Al no pasarle nada, la toma del archivo <code>ormconfig.json</code></td>
+<td>El método <code>forRoot()</code> carga la configuración de TypeORM. Al no pasarle ningún argumento, la toma del archivo <code>ormconfig.json</code></td>
 </tr>
 </table>
 </div>
@@ -3565,7 +3623,7 @@ export class ProductService {
 <div class="sect2">
 <h3 id="trueadaptación-de-los-parámetros-del-controlador"><a class="anchor" href="#trueadaptación-de-los-parámetros-del-controlador"></a>Adaptación de los parámetros del controlador</h3>
 <div class="paragraph">
-<p>El CLI de NestJS genera los endpoints usando el <code>id</code> de tipo <code>string</code>. Sin embargo, como en la entidad <code>Product</code> hemos definido el <code>id</code> de tipo <code>number</code> hay que cambiar el tipo del parámetro <code>id</code> en los métodos del controlador.</p>
+<p>El CLI de NestJS genera los endpoints usando el <code>id</code> de tipo <code>string</code>. Sin embargo, como en la entidad <code>Product</code> hemos definido el <code>id</code> de tipo <code>number</code> hay que cambiar el tipo del parámetro <code>id</code> en los métodos del controlador para que sea de tipo <code>number</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3616,10 +3674,177 @@ export class ProductController {
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="trueanexo-ii-bdd"><a class="anchor" href="#trueanexo-ii-bdd"></a>Anexo II. BDD</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>npm install jest-cucumber --save-dev</p>
+</li>
+<li>
+<p>Crear un archivo <code>tests/jest-bdd.json</code> con este contenido</p>
+<div class="listingblock">
+<div class="content">
+<pre>{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testMatch": [
+    "**/*.steps.ts"
+  ],
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}</pre>
+</div>
+</div>
+</li>
+<li>
+<p>En la configuración de jest de package.json:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">...
+  "jest": {
+    ...
+    "testRegex": [".*\\.spec\\.ts$", ".*\\.steps\\.ts$"], <i class="conum" data-value="1"></i><b>(1)</b>
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Modificamos la expresión regular para que también tome los <code>*.steps.ts</code></td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>En la configuración scripts de package.json</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">...
+  "scripts": {
+    ...
+    "test:bdd": "jest --config ./test/jest-bdd.json" <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Creamos una nueva entrada para ejecutar sólo los tests BDD</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>Definición de la feature y escenario en test/features/hello.feature</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="txt" class="language-txt hljs">Feature: Logging in
+
+    Scenario: Entering a correct password
+        Given I have previously created a password
+        When I enter my password correctly
+        Then I should be granted access</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Código base de los pasos del test</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">// logging-in.steps.js
+
+import { defineFeature, loadFeature } from 'jest-cucumber';
+
+const feature = loadFeature('test/features/hello.feature'); <i class="conum" data-value="1"></i><b>(1)</b>
+
+defineFeature(feature, (test) =&gt; { <i class="conum" data-value="2"></i><b>(2)</b>
+  test('Entering a correct password', ({ given, when, then }) =&gt; {
+    given('I have previously created a password', () =&gt; {});
+
+    when('I enter my password correctly', () =&gt; {});
+
+    then('I should be granted access', () =&gt; {});
+  });
+});</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Referencia al archivo de la especificación Gherkin</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Código generado automáticamente (Ver nota de información)</td>
+</tr>
+</table>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Instalando en Visual Studio Code la extensión <code>Jest-cucumber code generator</code> se activa una opción en el menú emergente que se activa al seleccionar un escenario completo de un archivo <code>.feature</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Otras extesiones interesantes para Visual Studio Code:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Cucumber (Gherkin) Full Support</p>
+</li>
+<li>
+<p>Snippets and Syntax Highlight for Gherkin (Cucumber)</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Para ejecutar todos los tests (unitarios y BDD): <code>npm test</code></p>
+</li>
+<li>
+<p>Para ejecutar sólo los tests BDD: <code>npm run test:bdd</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Enlace: <a href="https://github.com/bencompton/jest-cucumber#readme" class="bare">https://github.com/bencompton/jest-cucumber#readme</a></p>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-11-12 21:51:49 +0100
+Last updated 2021-11-15 16:34:17 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
