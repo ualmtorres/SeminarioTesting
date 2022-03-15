@@ -448,57 +448,60 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel1">
 <li><a href="#trueresumen">Resumen</a></li>
 <li><a href="#trueintroducción">1. Introducción</a></li>
-<li><a href="#truehola-mundo">2. Hola mundo</a>
+<li><a href="#trueintroducción-al-testing-con-la-kata-fizz-buzz">2. Introducción al testing con la kata Fizz Buzz</a>
 <ul class="sectlevel2">
-<li><a href="#truela-función-it">2.1. La función <code>it</code></a></li>
-<li><a href="#trueagrupación-de-tests">2.2. Agrupación de tests</a></li>
+<li><a href="#truepruebas-en-nestjs">2.1. Pruebas en NestJS</a></li>
+<li><a href="#trueel-archivo-de-tests-app-controller-spec-ts">2.2. El archivo de tests <code>app.controller.spec.ts</code></a>
+<ul class="sectlevel3">
+<li><a href="#truela-función-it">2.2.1. La función <code>it</code></a></li>
+<li><a href="#trueagrupación-de-tests-mediante-describe">2.2.2. Agrupación de tests mediante <code>describe</code></a></li>
+<li><a href="#truela-función-beforeeach">2.2.3. La función <code>beforeEach</code></a></li>
 </ul>
 </li>
-<li><a href="#truetests-unitarios">3. Tests unitarios</a>
+<li><a href="#trueimplementación-de-la-kata-fizz-buzz">2.3. Implementación de la kata Fizz Buzz</a></li>
+<li><a href="#truepruebas-unitarias-del-servicio">2.4. Pruebas unitarias del servicio</a></li>
+<li><a href="#truecobertura-de-tests">2.5. Cobertura de tests</a>
+<ul class="sectlevel3">
+<li><a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">2.5.1. Exclusión de archivos de la cobertura de tests</a></li>
+</ul>
+</li>
+<li><a href="#truepruebas-de-integración">2.6. Pruebas de integración</a></li>
+</ul>
+</li>
+<li><a href="#truecaso-de-uso-catálogo-de-productos">3. Caso de uso. Catálogo de productos</a>
 <ul class="sectlevel2">
-<li><a href="#truela-kata-fizz-buzz">3.1. La kata Fizz Buzz</a></li>
-</ul>
-</li>
-<li><a href="#truecobertura-de-tests">4. Cobertura de tests</a>
-<ul class="sectlevel2">
-<li><a href="#trueplugin-coverage-gutters">4.1. Plugin Coverage Gutters</a></li>
-<li><a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">4.2. Exclusión de archivos de la cobertura de tests</a></li>
-</ul>
-</li>
-<li><a href="#truetests-de-integración">5. Tests de integración</a></li>
-<li><a href="#truecaso-de-uso-catálogo-de-productos">6. Caso de uso. Catálogo de productos</a>
-<ul class="sectlevel2">
-<li><a href="#trueprimeros-tests">6.1. Primeros tests</a></li>
-<li><a href="#truetests-del-controlador">6.2. Tests del controlador</a>
+<li><a href="#trueprimeros-tests">3.1. Primeros tests</a></li>
+<li><a href="#truetests-del-controlador">3.2. Tests del controlador</a>
 <ul class="sectlevel3">
-<li><a href="#trueprimer-paso-evitar-que-falle-el-test">6.2.1. Primer paso. Evitar que falle el test</a></li>
-<li><a href="#truesegundo-paso-añadir-tests">6.2.2. Segundo paso. Añadir tests</a></li>
-<li><a href="#truetercer-paso-llevar-el-mock-del-servicio-a-una-clase">6.2.3. Tercer paso. Llevar el mock del servicio a una clase</a></li>
+<li><a href="#trueprimer-paso-evitar-que-falle-el-test">3.2.1. Primer paso. Evitar que falle el test</a></li>
+<li><a href="#truesegundo-paso-añadir-tests">3.2.2. Segundo paso. Añadir tests</a></li>
+<li><a href="#truetercer-paso-llevar-el-mock-del-servicio-a-una-clase">3.2.3. Tercer paso. Llevar el mock del servicio a una clase</a></li>
 </ul>
 </li>
-<li><a href="#truetests-del-servicio">6.3. Tests del servicio</a>
+<li><a href="#truetests-del-servicio">3.3. Tests del servicio</a>
 <ul class="sectlevel3">
-<li><a href="#trueprimer-paso-evitar-que-falle-el-test-2">6.3.1. Primer paso. Evitar que falle el test</a></li>
-<li><a href="#truesegundo-paso-añadir-tests-2">6.3.2. Segundo paso. Añadir tests</a></li>
-<li><a href="#truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase">6.3.3. Tercer paso. Llevar el mock del repositorio a una clase</a></li>
+<li><a href="#trueprimer-paso-evitar-que-falle-el-test-2">3.3.1. Primer paso. Evitar que falle el test</a></li>
+<li><a href="#truesegundo-paso-añadir-tests-2">3.3.2. Segundo paso. Añadir tests</a></li>
+<li><a href="#truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase">3.3.3. Tercer paso. Llevar el mock del repositorio a una clase</a></li>
 </ul>
 </li>
-<li><a href="#truetests-end-to-end">6.4. Tests end to end</a>
+<li><a href="#truetests-end-to-end">3.4. Tests end to end</a>
 <ul class="sectlevel3">
-<li><a href="#trueañadir-script-para-tests-e2e-en-modo-watch">6.4.1. Añadir script para tests e2e en modo <code>watch</code></a></li>
-<li><a href="#trueprimer-paso-evitar-que-falle-el-test-3">6.4.2. Primer paso. Evitar que falle el test</a></li>
-<li><a href="#truesegundo-paso-añadir-tests-3">6.4.3. Segundo paso. Añadir tests</a></li>
+<li><a href="#trueañadir-script-para-tests-e2e-en-modo-watch">3.4.1. Añadir script para tests e2e en modo <code>watch</code></a></li>
+<li><a href="#trueprimer-paso-evitar-que-falle-el-test-3">3.4.2. Primer paso. Evitar que falle el test</a></li>
+<li><a href="#truesegundo-paso-añadir-tests-3">3.4.3. Segundo paso. Añadir tests</a></li>
 </ul>
 </li>
-<li><a href="#truecobertura-de-tests-2">6.5. Cobertura de tests</a>
+<li><a href="#truecobertura-de-tests-2">3.5. Cobertura de tests</a>
 <ul class="sectlevel3">
-<li><a href="#trueignorando-los-módulos-para-el-análisis-de-la-cobertura">6.5.1. Ignorando los módulos para el análisis de la cobertura</a></li>
-<li><a href="#trueanálisis-de-la-cobertura">6.5.2. Análisis de la cobertura</a></li>
+<li><a href="#trueignorando-los-módulos-para-el-análisis-de-la-cobertura">3.5.1. Ignorando los módulos para el análisis de la cobertura</a></li>
+<li><a href="#trueanálisis-de-la-cobertura">3.5.2. Análisis de la cobertura</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#trueanexo-i-configuración-inicial-del-proyecto">Anexo I. Configuración inicial del proyecto</a>
+<li><a href="#trueanexo-i-plugin-coverage-gutters">Anexo I. Plugin Coverage Gutters</a></li>
+<li><a href="#trueanexo-ii-configuración-inicial-del-proyecto">Anexo II. Configuración inicial del proyecto</a>
 <ul class="sectlevel2">
 <li><a href="#truecreación-de-la-entidad">Creación de la entidad</a></li>
 <li><a href="#trueconfiguración-de-typeorm">Configuración de TypeORM</a></li>
@@ -509,6 +512,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#trueanexo-ii-bdd">Anexo II. BDD</a></li>
+<li><a href="#trueanexo-iii-ejemplos-de-tests">Anexo III. Ejemplos de tests</a></li>
+<li><a href="#truedomain-objects-vs-entities">Domain objects vs entities</a></li>
+<li><a href="#truesorry-cypress">Sorry Cypress</a></li>
+<li><a href="#trueretales">Retales</a></li>
 </ul>
 </div>
 </div>
@@ -526,7 +533,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="trueresumen"><a class="anchor" href="#trueresumen"></a>Resumen</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>El proceso de testing es una etapa fundamental en el desarrollo de cualquier proyecto serio. Permite dar un feedback inmediato al equipo de desarrollo y hace tener más confianza en la aplicación y durante los procesos de refactorización. NestJS hace el proceso de desarrollo de tests sea más sencillo integrando Jest y Supertest sin configuración al crear un proyecto nuevo. Además, el uso del sistema de inyección de dependencias de NestJS facilita el uso de mocks. En este tutorial se presenta el desarrollo de tests unitarios para controladores y servicios, y el desarrollo de tests de integración, todo sobre un ejemplo en NestJS de una API de un catálogo ficticio de productos.</p>
+<p>El proceso de testing es una etapa fundamental en el desarrollo de cualquier proyecto serio. Permite dar un feedback inmediato al equipo de desarrollo y hace tener más confianza en la aplicación y durante los procesos de refactorización. NestJS hace el proceso de desarrollo de tests sea más sencillo integrando Jest y Supertest sin configuración al crear un proyecto nuevo. Además, el uso del sistema de inyección de dependencias de NestJS facilita el uso de mocks. En este tutorial se presenta el desarrollo de tests unitarios para controladores y servicios, y el desarrollo de tests de integración, todo sobre ejemplos en NestJS de una API de reserva de espacios.</p>
 </div>
 <div class="ulist">
 <div class="title">Objetivos</div>
@@ -573,10 +580,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p><a href="https://github.com/ualmtorres/fizzbuzz">Fizz Buzz</a></p>
 </li>
 <li>
-<p><a href="https://github.com/ualmtorres/testing-product-catalog/tree/base">Base del caso de uso del catálogdo de productos (Rama <code>base</code>)</a></p>
+<p><a href="https://github.com/ualmtorres/testing-product-catalog/tree/base">Base del caso de uso del catálogo de productos (Rama <code>base</code>)</a></p>
 </li>
 <li>
 <p><a href="https://github.com/ualmtorres/testing-product-catalog/tree/master">Caso de uso del catálogo de productos (en curso)</a></p>
+</li>
+<li>
+<p><a href="https://nodisponible.com">Caso de uso de la API de gestión de espacios (No disponible)</a></p>
 </li>
 </ul>
 </div>
@@ -620,10 +630,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Tests unitarios. Son código que ayuda a asegurar que las partes de las aplicaciones funcionan de la forma esperada. La unidad testada puede ser una función, una clase, un módulo. Deben ser independientes unos de otros. Para una entrada, el test unitario comprueba el resultado. No contactan con el mundo exterior</p>
 </li>
 <li>
-<p>Tests de integración. Comprobamos la integración de nuestro sistema con algo de infraestructura (p.e. bases de datos, archivos, E/S, &#8230;&#8203;). Hacen llamadas a servicios externos.</p>
+<p>Tests de integración. Comprobamos la integración de nuestro sistema con algo de infraestructura (p.e. bases de datos, archivos, E/S, &#8230;&#8203;). Hacen llamadas a servicios externos. Las pruebas de integración normalmente cubren la prueba de un sistema (p.e. backend) aislándolo del resto.</p>
 </li>
 <li>
-<p>Tests end to end. Simulan condiciones reales. Se ejecutarían en un navegador (o similar). Simulan a un usuario en la aplicación (escribiendo, haciendo clics, &#8230;&#8203;)</p>
+<p>Tests end to end. También conocidas como pruebas funcionales, simulan condiciones reales. Se ejecutarían en un navegador (o similar) y cubren todos los sistemas funcionando juntos (p.e. frontend y backend). Simulan a un usuario en la aplicación (escribiendo, haciendo clics, &#8230;&#8203;)</p>
 </li>
 </ul>
 </div>
@@ -637,6 +647,27 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="paragraph">
 <p>La pirámide de tests, además de representar el coste y la velocidad de ejecucuión de los tests, también refleja que deberíamos escribir más tests de los simples (unitarios) y menos tests de los complejos (end-to-end).</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Nuestras herramientas de Testing</div>
+<div class="paragraph">
+<p>Para nuestro trabajo de testing de aplicaciones con tecnología JavaScript/TypeScript, en UAL STIC se proponen las herramientas de testing siguientes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://jestjs.io/">Jest</a> para tests unitarios en backend (pruebas de objetos de dominio, controladores y servicios) así como en frontend.</p>
+</li>
+<li>
+<p><a href="https://github.com/visionmedia/supertest">Supertest</a> para tests de integración en backend y frontend. Permite hacer las pruebas de llamadas HTTP.</p>
+</li>
+<li>
+<p><a href="https://www.cypress.io/">Cypress</a> para pruebas e2e que simulen las acciones de los usuarios.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -652,32 +683,32 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 </table>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="trueintroducción-al-testing-con-la-kata-fizz-buzz"><a class="anchor" href="#trueintroducción-al-testing-con-la-kata-fizz-buzz"></a>2. Introducción al testing con la kata Fizz Buzz</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>NestJS ayuda para que el proceso sea menos tedioso ofreciendo lo siguiente:</p>
+<p>Para introducirnos al mundo de testing lo haremos de la mano de la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>. Se trata de un ejemplo sencillo en que para números comprendidos entre 1 y 100:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Scaffolding para tests en la aplicación.</p>
+<p>Se devolverá <em>Fizz</em> si el número es múltiplo de 3.</p>
 </li>
 <li>
-<p>Integracion con <a href="https://github.com/facebook/jest">Jest</a> (desarrollado por Facebook y se usa con "cero configuración") y <a href="https://github.com/visionmedia/supertest">Supertest</a> (para testing de peticiones HTTP). No obstante, se puede usar cualquier otro framework de testing.</p>
+<p>Se devolverá <em>Buzz</em> si es múltiplo de 5.</p>
 </li>
 <li>
-<p>Uso del sistema de inyección de dependencias de NestJS para facilitar el uso de mocks.</p>
+<p>Se devolverá <em>Fizzbuzz</em> si es múltiplo de 15.</p>
 </li>
 <li>
-<p>Jest se configura a través del archivo <code>package.json</code> determinando mediante expresiones regulares los archivos que se consideran tests (p.e. para que las pruebas estuviesen en cualquier archivo <code>.spec.ts</code> usaríamos <code>"testRegex": ".*\\.spec\\.ts$"</code>).</p>
+<p>En cualquier otro caso, se devolverá el propio número.</p>
 </li>
 </ul>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="truehola-mundo"><a class="anchor" href="#truehola-mundo"></a>2. Hola mundo</h2>
-<div class="sectionbody">
 <div class="paragraph">
-<p>Crearemos un proyecto de ejemplo para la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>. Se trata de un ejemplo sencillo en que para números comprendidos entre 1 y 100 se devolverá <em>Fizz</em> si el número es múltiplo de 3, <em>Buzz</em> si es múltiplo de 5 o <em>Fizzbuzz</em> si es múltiplo de 15. En caso contrario, se devolverá el propio número.</p>
+<p>Comencemos creando el proyecto NestJS.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -713,37 +744,110 @@ Ran all test suites.</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truela-función-it"><a class="anchor" href="#truela-función-it"></a>2.1. La función <code>it</code></h3>
+<h3 id="truepruebas-en-nestjs"><a class="anchor" href="#truepruebas-en-nestjs"></a>2.1. Pruebas en NestJS</h3>
 <div class="paragraph">
-<p>En Jest, los tests son implementados mediente funciones <code>it</code> o <code>test</code> (se pueden usar de forma indistinta). La función <code>it</code> toma 3 argumentos: nombre del test, función con las expectativas y timeout, este último opcional. El timeout predeterminado es de 5 segundos. A continuación se muestra el test generado por NestJS al crear un proyecto.</p>
+<p>Como acabamos de comentar, el CLI de NestJS instala las dependencias de testing y crea una suite de pruebas a modo de ejemplo al crear un proyecto nuevo. Y es que NestJS ayuda a que el proceso sea menos tedioso ofreciendo lo siguiente:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Realiza un <em>scaffolding</em> para tests en la aplicación. Cuando creamos controladores y servicios, el CLI de NestJS también crea su correspondiente archivo de testing para dichos controladores y servicios. Al crear el proyecto, el CLI de NestJS también crea un archivo de testing e2e para probar la llamada a la ruta raíz de la aplicación.</p>
+</li>
+<li>
+<p>Integracion con <a href="https://github.com/facebook/jest">Jest</a> (desarrollado por Facebook y se usa con "cero configuración") y <a href="https://github.com/visionmedia/supertest">Supertest</a> (para testing de peticiones HTTP). No obstante, se puede usar cualquier otro framework de testing.</p>
+</li>
+<li>
+<p>Uso del sistema de inyección de dependencias de NestJS para facilitar el uso de mocks. Por ejemplo, esto nos va a poder permitir proporcionar un servicio mockeado al probar un controlador.</p>
+</li>
+<li>
+<p>Jest se configura a través del archivo <code>package.json</code> determinando mediante expresiones regulares los archivos que se consideran tests (p.e. para que las pruebas estuviesen en cualquier archivo <code>.spec.ts</code> usaríamos <code>"testRegex": ".*\\.spec\\.ts$"</code>).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueel-archivo-de-tests-app-controller-spec-ts"><a class="anchor" href="#trueel-archivo-de-tests-app-controller-spec-ts"></a>2.2. El archivo de tests <code>app.controller.spec.ts</code></h3>
+<div class="paragraph">
+<p>Al crear un proyecto nuevo, el CLI de NestJS crea el archivo de testing <code>app.controller.spec.ts</code> como el siguiente.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/EstructuraArchivoTest.png" alt="EstructuraArchivoTest">
+</div>
 </div>
 <div class="paragraph">
-<p>+</p>
+<p>A continuación presentaremos las partes más significativas de ese archivo.</p>
+</div>
+<div class="sect3">
+<h4 id="truela-función-it"><a class="anchor" href="#truela-función-it"></a>2.2.1. La función <code>it</code></h4>
+<div class="paragraph">
+<p>En Jest, los tests se implementan mediante funciones <code>it</code> (realmente, <code>it</code> es un alias de una función denominada <code>test</code>, y se pueden usar de forma indistinta). La función <code>it</code> toma 3 argumentos:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Nombre del test</p>
+</li>
+<li>
+<p>Función con las expectativas</p>
+</li>
+<li>
+<p>Timeout (opcional). El timeout predeterminado es de 5 segundos.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A continuación se muestra el test generado por NestJS en <code>app.controller.spec.ts</code> al crear el proyecto.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">it('should return "Hello World!"', () =&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
-  expect(appController.getHello()).toBe('Hello World!'); <i class="conum" data-value="2"></i><b>(2)</b>
-});</code></pre>
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">it( <i class="conum" data-value="1"></i><b>(1)</b>
+  'should return "Hello World!"', <i class="conum" data-value="2"></i><b>(2)</b>
+  () =&gt; { <i class="conum" data-value="3"></i><b>(3)</b>
+    expect(appController.getHello()).toBe('Hello World!'); <i class="conum" data-value="4"></i><b>(4)</b>
+  }
+);</code></pre>
 </div>
 </div>
 <div class="colist arabic">
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>El usar <code>it</code> en lugar de <code>test</code>, sumado a usar el nombre del test en condicional, hace el test más legible: <code>it should return "Hello World!</code>.</td>
+<td>Definición del caso de prueba</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td><code>expect</code> se usar para comprobar un valor obtenido por una <a href="https://jestjs.io/docs/expect">función matcher</a>, como <code>toBe</code>.</td>
+<td>Nombre del caso de prueba</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Función de evaluación del test con la definición de las expectativas</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td><code>expect</code> se usa para comprobar un valor obtenido por una <a href="https://jestjs.io/docs/expect">función matcher</a>, como <code>toBe</code>.</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>El usar <code>it</code> en lugar de <code>test</code>, sumado a usar el nombre del test en condicional, hace que el test sea más legible: <code>it should return "Hello World!</code>.</p>
+</div>
+</td>
 </tr>
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="trueagrupación-de-tests"><a class="anchor" href="#trueagrupación-de-tests"></a>2.2. Agrupación de tests</h3>
+<div class="sect3">
+<h4 id="trueagrupación-de-tests-mediante-describe"><a class="anchor" href="#trueagrupación-de-tests-mediante-describe"></a>2.2.2. Agrupación de tests mediante <code>describe</code></h4>
 <div class="paragraph">
-<p>Para tener un código de testing más limpio y organizado, los tests (<code>it</code>)  se pueden incluir en la función <code>describe</code>. Esto da lugar a un código de testing agrupado en bloques <code>describe</code> formados por tests <code>it</code>. Además, los bloques <code>describe</code> se pueden anidar. A continuación se muestra la estructura de agrupación de tests en bloques <code>describe</code>.</p>
+<p>Para tener un código de testing más limpio y organizado, los tests (<code>it</code>)  se pueden incluir en una función <code>describe</code>. Esto da lugar a un código de testing agrupado en bloques <code>describe</code>, los cuales están formados por tests <code>it</code>. Además, los bloques <code>describe</code> se pueden anidar. A continuación se muestra una estructura de agrupación de tests en bloques <code>describe</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -752,7 +856,7 @@ Ran all test suites.</code></pre>
       expect(appController.getHello()).toBe('Hello World!');
     });
 
-    it('should ....' () =&gt; {
+    it('should ....' () =&gt; { <i class="conum" data-value="3"></i><b>(3)</b>
       // test code
     });
   });</code></pre>
@@ -775,20 +879,37 @@ Ran all test suites.</code></pre>
 </table>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="truetests-unitarios"><a class="anchor" href="#truetests-unitarios"></a>3. Tests unitarios</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="truela-kata-fizz-buzz"><a class="anchor" href="#truela-kata-fizz-buzz"></a>3.1. La kata Fizz Buzz</h3>
+<div class="sect3">
+<h4 id="truela-función-beforeeach"><a class="anchor" href="#truela-función-beforeeach"></a>2.2.3. La función <code>beforeEach</code></h4>
 <div class="paragraph">
-<p>Para hacer los tests unitarios de la kata seguiremos estos pasos:</p>
+<p>La función <code>beforeEach</code> se ejecuta antes de que se ejecute cada test de la suite. Normalmente prepara una configuración que los tests necesitan para ejecutarse de forma independiente al resto de tests (p.e. prepara el contenido de la base de datos, configura un servicio para que devuelva unos datos concretos a los tests, &#8230;&#8203;)</p>
 </div>
-<div class="olist arabic">
-<ol class="arabic">
+<div class="paragraph">
+<p>Esta función forma parte del conjunto de funciones de preparación o limpieza del entorno de testing:</p>
+</div>
+<div class="ulist">
+<ul>
 <li>
-<p>Crearemos un nuevo módulo, servicio y controlador para la kata.</p>
+<p><code>beforeAll</code> se ejecuta una sola vez antes de todos los tests del bloque.</p>
+</li>
+<li>
+<p><code>beforeEach</code> se ejecuta antes de cada test del bloque.</p>
+</li>
+<li>
+<p><code>afterEach</code> se ejecuta después de cada test del bloque.</p>
+</li>
+<li>
+<p><code>afterAll</code> se ejecuta una sola vez después de todos los tests del bloque.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trueimplementación-de-la-kata-fizz-buzz"><a class="anchor" href="#trueimplementación-de-la-kata-fizz-buzz"></a>2.3. Implementación de la kata Fizz Buzz</h3>
+<div class="paragraph">
+<p>Comenzamos creando un nuevo módulo, un servicio y un controlador para la kata.</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">nest g module fizzbuzz
@@ -796,9 +917,9 @@ nest g service fizzbuzz
 nest g controller fizzbuzz</code></pre>
 </div>
 </div>
-</li>
-<li>
-<p><em>El servicio</em>. Crearemos un nuevo método en <code>fizzbuzz/fizzbuzz.service.ts</code> denominado <code>fizzbuzz</code> que aceptará un argumento de tipo <code>number</code>. El servicio tiene la lógica siguiente para implementar la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>.</p>
+<div class="paragraph">
+<p>En el servicio <code>fizzbuzz/fizzbuzz.service.ts</code> crearemos un nuevo método denominado <code>fizzbuzz</code> que aceptará un argumento de tipo <code>number</code>. El servicio tiene la lógica siguiente para implementar la <a href="https://kata-log.rocks/fizz-buzz-kata">kata Fizz Buzz</a>.</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Injectable } from '@nestjs/common';
@@ -835,9 +956,9 @@ export class FizzbuzzService { <i class="conum" data-value="1"></i><b>(1)</b>
 </tr>
 </table>
 </div>
-</li>
-<li>
-<p><em>El controlador</em>. Crearemos un endpoint en <code>fizzbuzz/fizzbuzz.controller.ts</code> que acepte un número como parámetro. Este endpoint llamará al método del servicio del paso anterior.</p>
+<div class="paragraph">
+<p>Para el controlador <code>fizzbuzz/fizzbuzz.controller.ts</code> crearemos un endpoint que acepte un número como parámetro. Este endpoint llamará al método del servicio del paso anterior.</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Controller, Get, Param } from '@nestjs/common';
@@ -862,9 +983,31 @@ export class FizzbuzzController {
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>Ahora podemos probar la kata con cualuier número:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code><a href="http://localhost:3000/fizzbuzz/3" class="bare">http://localhost:3000/fizzbuzz/3</a></code> devolvería <em>Fizz</em></p>
 </li>
 <li>
-<p>El CLI de NestJS ha creado el archivo <code>fizzbuzz/fizzbuzz.service.spec.ts</code> para los tests del servicio generado. Los tests los añadiremos en el grupo <code>describe</code> existente</p>
+<p><code><a href="http://localhost:3000/fizzbuzz/5" class="bare">http://localhost:3000/fizzbuzz/5</a></code> devolvería <em>Buzz</em></p>
+</li>
+<li>
+<p><code><a href="http://localhost:3000/fizzbuzz/15" class="bare">http://localhost:3000/fizzbuzz/15</a></code> devolvería <em>FizzBuzz</em></p>
+</li>
+<li>
+<p><code><a href="http://localhost:3000/fizzbuzz/2" class="bare">http://localhost:3000/fizzbuzz/2</a></code> devolvería <em>2</em></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truepruebas-unitarias-del-servicio"><a class="anchor" href="#truepruebas-unitarias-del-servicio"></a>2.4. Pruebas unitarias del servicio</h3>
+<div class="paragraph">
+<p>El CLI de NestJS ha creado el archivo <code>fizzbuzz/fizzbuzz.service.spec.ts</code> para los tests del servicio generado. Los tests los añadiremos en el grupo <code>describe</code> existente. Se trata de definir los casos de prueba para los casos de testing de la kata (3, 5, 15, ninguno de ellos, fuera del rango 1-100)</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Test, TestingModule } from '@nestjs/testing';
@@ -932,97 +1075,118 @@ describe('FizzbuzzService', () =&gt; { <i class="conum" data-value="1"></i><b>(1
 </tr>
 </table>
 </div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Estructura de un archivo de tests</div>
+<div class="paragraph">
+<p>Los tests pueden hacer 3 cosas:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Preparar el entorno (setup).</p>
 </li>
 <li>
-<p><strong>Añadir el servicio de Fizz Buzz al archivo de testing del controlador.</strong> Este paso es muy importante porque para el testing, NestJS usa otro entorno diferente al de ejecución. Esto hace que el controlador no pueda resolver de forma predererminada su dependencia con el servicio. Es decir, en el archivo de test del controlador no está añadido el servicio Fizzbuzz. Tenemos dos opciones: añadir el servicio en el elemento <code>providers</code> o cargar directamente el módulo que definimos al principio, y que ya incorporaba el controlador y el servicio. Esta última será la opción que utilizaremos aquí y que se muestra en el listado de <code>fizzbuzz/fizzbuzz.controller.spec.ts</code>.</p>
+<p>Llamar a algo (actuar) y verificar el comportamiento (assert o verificar).</p>
+</li>
+<li>
+<p>Destruir lo construido.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>En Jest esto lo vemos en los bloques:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>beforeAll</code> prepara el entorno antes de ejecutar las pruebas. Se ejecuta una vez al principio de los tests.</p>
+</li>
+<li>
+<p><code>beforeEach</code> prepara el entorno antes de ejecutar cada prueba. Se ejecuta una vez antes de cada test.</p>
+</li>
+<li>
+<p><code>it</code> o <code>test</code> definen un caso de test para cada prueba. En <code>expect</code> llamamos a la operación (proceso de actuación) y con los <em>matchers</em> (<code>toBe, toEqual, toBeGreaterThan, toMatch, toContain, toThrow</code>, &#8230;&#8203;) se verifica el test. Más información en la <a href="https://jestjs.io/es-ES/docs/using-matchers">página de Comparadores (matchers) de Jest</a>.</p>
+</li>
+<li>
+<p><code>afterEach</code> realiza una operación de destrucción o desmontaje del entorno después de ejecutar cada prueba. Se ejecuta una vez después de cada test.</p>
+</li>
+<li>
+<p><code>afterAll</code> destruye o desmonta el entorno tras finalizar todas las pruebas. Se ejecuta una vez al final de los tests.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Para ejecutar sólo los tests del servicio y no los de todo el proyecto, lanzaremos los tests en modo <em>watch</em>:</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Test, TestingModule } from '@nestjs/testing';
-import { FizzbuzzController } from './fizzbuzz.controller';
-import { FizzbuzzModule } from './fizzbuzz.module';
-
-describe('FizzbuzzController', () =&gt; {
-  let controller: FizzbuzzController;
-
-  beforeEach(async () =&gt; {
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [FizzbuzzModule], <i class="conum" data-value="1"></i><b>(1)</b>
-      //controllers: [FizzbuzzController], <i class="conum" data-value="2"></i><b>(2)</b>
-    }).compile();
-
-    controller = module.get&lt;FizzbuzzController&gt;(FizzbuzzController);
-  });
-
-  it('should be defined', () =&gt; {
-    expect(controller).toBeDefined();
-  });
-});</code></pre>
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm run test:watch</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Se nos indicará el modo de uso para que elijamos uno:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="code" class="language-code hljs">Watch Usage
+ › Press a to run all tests.
+ › Press f to run only failed tests.
+ › Press p to filter by a filename regex pattern. <i class="conum" data-value="1"></i><b>(1)</b>
+ › Press t to filter by a test name regex pattern.
+ › Press q to quit watch mode.
+ › Press Enter to trigger a test run.</code></pre>
 </div>
 </div>
 <div class="colist arabic">
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Módulo añadido para incluir controlador y servicio en el test</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Declaración insuficiente inicial (ahora comentada) en la que sólo se especificaba el controlador y no el servicio.</td>
+<td>Opción elegida para pasar los tests a los archivos indicados</td>
 </tr>
 </table>
 </div>
-</li>
-</ol>
-</div>
 <div class="paragraph">
-<p>Si ahora ejecutamos los tests con <code>npm run test</code>, este será su resultado:</p>
+<p>Elegiremos <code>p</code> para indicar el nombre de archivo del servicio. No hace falta introducir el nombre entero. Basta con una parte del nombre que permita seleccionarlo (p.e. <code>fizzbuzz.se</code>)</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
- PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
- PASS  src/app.controller.spec.ts
+<pre class="highlightjs highlight"><code data-lang="code" class="language-code hljs">Pattern Mode Usage
+ › Press Esc to exit pattern mode.
+ › Press Enter to filter by a filenames regex pattern.
 
-Test Suites: 3 passed, 3 total
-Tests:       8 passed, 8 total
-Snapshots:   0 total
-Time:        2.63 s, estimated 3 s
-Ran all test suites.</code></pre>
+ pattern › fizzbuzz.se <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
 </div>
 </div>
-<div class="admonitionblock caution">
+<div class="colist arabic">
 <table>
 <tr>
-<td class="icon">
-<i class="fa icon-caution" title="Caution"></i>
-</td>
-<td class="content">
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Expresión que permite seleccionar al servicio a probar</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>Si no hubiésemos añadido el servicio o el módulo (que incluye controlador y servicio) en <code>fizzbuzz/fizzbuzz.controller.spec.ts</code>, habríamos obtenido el siguiente error al ejecutar <code>npm run test</code>:</p>
+<p>Y este sería el resultado del proceso de testing:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">...
-FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts
+<pre class="highlightjs highlight"><code data-lang="code" class="language-code hljs"> PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
+  FizzbuzzService
+    ✓ should be defined (25 ms)
+    ✓ should return Fizz when the number is multiple of 3 (6 ms)
+    ✓ should return Buzz when the number is multiple of 5 (4 ms)
+    ✓ should return FizzBuzz when the number is multiple of 15 (21 ms)
+    ✓ should return the number when then number is neither multiple of 3, 5 nor 15 (3 ms)
+    ✓ should return nothing when the number is not between 1 and 100 (5 ms)
 
-● FizzbuzzController › should be defined
-    Nest cant resolve dependencies of the FizzbuzzController (?). Please make sure that the argument FizzbuzzService at index [0] is available in the RootTestModule context.
-
-    Potential solutions:
-    - If FizzbuzzService is a provider, is it part of the current RootTestModule?
-    - If FizzbuzzService is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing FizzbuzzService */ ]
-      })
-...</code></pre>
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        2.925 s, estimated 5 s</code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>Esto es una señal de que falta por incluir un servicio en la lista de servicios del archivo de tests.</p>
-</div>
-</td>
-</tr>
-</table>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -1081,11 +1245,8 @@ Time:        2.575 s, estimated 3 s</code></pre>
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="truecobertura-de-tests"><a class="anchor" href="#truecobertura-de-tests"></a>4. Cobertura de tests</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="truecobertura-de-tests"><a class="anchor" href="#truecobertura-de-tests"></a>2.5. Cobertura de tests</h3>
 <div class="paragraph">
 <p>En el proceso de testing la cobertura de tests proporciona una medida muy interesante. Ofrece el porcentaje de código que está incluido en los tests, es decir, el porcentaje de código que se está probando. Esto es muy útil porque nos ayuda a dirigir los esfuerzos para crear tests para el código que aún está oculto a los tests y que puede ser una potencial fuente de errores.</p>
 </div>
@@ -1098,37 +1259,37 @@ Time:        2.575 s, estimated 3 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Esto, además de ejecutar los tests unitarios, nos dará el porcentaje de código testado para cada archivo y a nivel global.</p>
+<p>Esto ejecutará los tests nos dará el porcentaje de código testado para cada archivo y a nivel global.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  src/app.controller.spec.ts
-  AppController
-    root
-      ✓ should return "Hello World!" (11 ms)
-    Fizzbuzz
-      ✓ should return FizzBuzz when the number is multiple of 15 (3 ms)
-      ✓ should return Fizz when the number is multiple of 3 (2 ms)
-      ✓ should return Buzz when the number is multiple of 5 (2 ms)
-      ✓ should return the number when then number is neither multiple of 3, 5 nor 15 (2 ms)
-      ✓ should return nothing when the number is not between 1 and 100 (2 ms)
+<pre class="highlightjs highlight"><code data-lang="code" class="language-code hljs"> PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+ PASS  src/app.controller.spec.ts
+ PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
+-------------------------|---------|----------|---------|---------|-------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------------|---------|----------|---------|---------|-------------------
+All files                |   63.46 |      100 |   71.42 |    62.5 |
+ src                     |      52 |      100 |      75 |   47.36 |
+  app.controller.ts      |     100 |      100 |     100 |     100 |
+  app.module.ts          |       0 |      100 |     100 |       0 | 1-11
+  app.service.ts         |     100 |      100 |     100 |     100 |
+  main.ts                |       0 |      100 |       0 |       0 | 1-8
+ src/fizzbuzz            |   74.07 |      100 |   66.66 |   76.19 |
+  fizzbuzz.controller.ts |    87.5 |      100 |      50 |   83.33 | 10
+  fizzbuzz.module.ts     |       0 |      100 |     100 |       0 | 1-9
+  fizzbuzz.service.ts    |     100 |      100 |     100 |     100 |
+-------------------------|---------|----------|---------|---------|-------------------
 
-
-File               % Stmts % Branch  % Funcs % Lines Uncovered Lines
-All files            68.57      100    83.33   68.97
- app.controller.ts     100      100      100     100
- app.module.ts           0      100      100       0    1-10
- app.service.ts        100      100      100     100
- main.ts                 0      100        0       0    1-8
-
-Test Suites: 1 passed, 1 total
-Tests:       6 passed, 6 total
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
 Snapshots:   0 total
-Time:        3.188 s, estimated 4 s</code></pre>
+Time:        7.747 s, estimated 8 s
+Ran all test suites.</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Como resultado también se genera una carpeta <code>coverage/lcov-coverage</code> con ese mismo informe, pero en HTML. Además, podemos hacer clic sobre cada archivo y ver su cobertura individual.</p>
+<p>Como resultado también se genera una carpeta <code>coverage/lcov-report</code> con ese mismo informe, pero en HTML. Aparece organizado de acuerdo con los carpetas que tengamos en la carpeta <code>src</code>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1136,7 +1297,15 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Si ahora modificamos los tests y comentamos uno de ellos, por ejemplo el que probaba los múltiplos de 15, y volvemos a ejecutar la cobertura de tests con <code>npm run test:cov</code> veremos que la cobertura de <code>app.service.ts</code> ha bajado de 100% a 92.86%.</p>
+<p>Si hace clic sobre <code>src/fizzbuzz</code> veremos su informe de cobertura. Vemos que está probado el 100% del código del servicio.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/coverage100Fizzbuzz.png" alt="coverage100Fizzbuzz">
+</div>
+</div>
+<div class="paragraph">
+<p>Si ahora modificamos los tests de <code>fizzbuzz/fizzbuzz.service.spec.ts</code> y comentamos uno de ellos, por ejemplo el que probaba los múltiplos de 15, y volvemos a ejecutar la cobertura de tests con <code>npm run test:cov</code>, veremos que la cobertura de <code>fizzbuzz/fizzbuzz.service.ts</code> ha bajado de 100% a 92.3%.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1144,7 +1313,7 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Si ahora hacemos clic sobre <code>app.service.ts</code> en el informe, nos llevará al archivo y nos dirá marcará en rojo las líneas de código que no están tratadas (cubiertas) en ningún test.</p>
+<p>Si ahora hacemos clic sobre <code>fizzbuzz/fizzbuzz.service.ts</code> en el informe, nos llevará al archivo y nos marcará en rojo las líneas de código que no están tratadas (cubiertas) en ningún test. Como hemos comentado anteriormente, este resultado es muy importante porque nos puede guiar en el proceso de priorización de los próximos tests a desarrollar.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1154,35 +1323,34 @@ Time:        3.188 s, estimated 4 s</code></pre>
 <div class="paragraph">
 <p>Si anulamos los comentarios del test y volvemos a ejecutar la cobertura de tests todo volverá a estar como antes y ese código ya estará de nuevo cubierto por los tests.</p>
 </div>
-<div class="sect2">
-<h3 id="trueplugin-coverage-gutters"><a class="anchor" href="#trueplugin-coverage-gutters"></a>4.1. Plugin Coverage Gutters</h3>
-<div class="paragraph">
-<p><a href="https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters">Coverage Gutters</a> es un plugin para Visual Studio Code que permite ver la cobertura de cada archivo mostrando su porcentaje en la barra de estado e indicando en verde y rojo sobre el código las líneas probadas por los tests y las no probadas.</p>
-</div>
-<div class="paragraph">
-<p>Tras instalarlo aparecerá un botón <code>Watch</code> en la barra de estado que podremos activar para que muestre la cobertura del archivo abierto.</p>
-</div>
-<div class="imageblock">
+<div class="sidebarblock">
 <div class="content">
-<img src="./images/CoverageGuttersBoton.png" alt="CoverageGuttersBoton">
+<div class="title">¿Hace falta probarlo todo?</div>
+<div class="paragraph">
+<p>En el proceso de testing decidimos qué probar. Alguien podría decir de probarlo todo con una cobertura cercana al 100%. Sin embargo, no es necesario. Sólo hay que probar las partes más críticas. Puede que esté entre el 70%-90%. Normalmente probaremos</p>
 </div>
+<div class="ulist">
+<ul>
+<li>
+<p>Servicios (si hay <code>app.service.ts</code> también)</p>
+</li>
+<li>
+<p>Controladores (si hay <code>app.controller.ts</code> también)</p>
+</li>
+<li>
+<p>No hace falta probar DTOs, constantes, entidades y módulos (los podemos excluir de la cobertura -ver <a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">Exclusión de archivos de la cobertura de tests</a>)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="trueexclusión-de-archivos-de-la-cobertura-de-tests"><a class="anchor" href="#trueexclusión-de-archivos-de-la-cobertura-de-tests"></a>2.5.1. Exclusión de archivos de la cobertura de tests</h4>
+<div class="paragraph">
+<p>El porcentaje de cobertura de tests que devuelve el informe se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir archivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento <code>coveragePathIgnorePatterns</code> del elemento <code>jest</code> en el archivo <code>package.json</code>.</p>
 </div>
 <div class="paragraph">
-<p>Tras pulsar el botón, si abrimos un archivo nos mostrará la cobertura directamente en Visual Studio Code. La figura siguiente muestra en verde las líneas probadas, en rojo las líneas no probadas y el porcentaje de cobertura en la barra de estado (50%).</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="./images/CoverageGuttersWatch.png" alt="CoverageGuttersWatch">
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="trueexclusión-de-archivos-de-la-cobertura-de-tests"><a class="anchor" href="#trueexclusión-de-archivos-de-la-cobertura-de-tests"></a>4.2. Exclusión de archivos de la cobertura de tests</h3>
-<div class="paragraph">
-<p>El porcentaje de cobertura de tests que devuelve el informe se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir arvhivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento <code>coveragePathIgnorePatterns</code> del elemento <code>jest</code> en el archivo <code>package.json</code>.</p>
-</div>
-<div class="paragraph">
-<p>Por ejemplo, si decidimos excluir del proceso de análisis de cobertura de tests los archivos de los módulos (p.e. <code>app.module.ts</code>, <code>product.module.ts</code> y otros módulos), así quedaría el elemento <code>jest</code> en <code>package.json</code> para excluir los archivos de módulo:</p>
+<p>Por ejemplo, si decidimos excluir del proceso de análisis de cobertura de tests los archivos de los módulos (p.e. <code>app.module.ts</code>, <code>fizzbuzz.module.ts</code> y otros módulos), así quedaría el elemento <code>jest</code> en <code>package.json</code> para excluir los archivos de módulo:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1214,53 +1382,291 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </tr>
 </table>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="truetests-de-integración"><a class="anchor" href="#truetests-de-integración"></a>5. Tests de integración</h2>
-<div class="sectionbody">
 <div class="paragraph">
-<p>En backend los utilizaremos para testear repositorios. Si hemos seguido el principio de Inversión de dependencias tendremos por un lado una interface con una serie de métodos (p.e. la interface <code>UserRepository</code> con los métodos <code>save</code> y <code>find</code>. Por otro lado, tendremos un conjunto de clases repositorio particulares (p.e. MySQLUserRepository) que implementan esa interface.</p>
+<p>Esto mejoraría el porcentaje de cobertura ya que se han retirado los archivos de módulo del proceso de cómputo de la cobertura, ya que bajaban la cobertura porque no tenían tests asociados. La figura siguiente ilustra la cobertura total. Se ha pasado de un 63.46% a un 84.61%. Esto en sí no es ni bueno ni malo, ni un objetivo en sí mismo. Es sólo estar informado que hay ciertos archivos que aceptamos no probar y que de no ser excluidos pueden estar datos erróneos de cobertura.</p>
 </div>
-<div class="paragraph">
-<p>En este tutorial tratamos tests unitarios y test end-to-end.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Tests unitarios: <code>npm run test</code>. Se centran en los módulos y en las clases. El ejemplo básico incorporado por el CLI de NestJS al crear un proyecto comprueba que la llamada al controlador devuelve <code>Hello World!</code>.</p>
-</li>
-<li>
-<p>Tests end-to-end: <code>npm run test:e2e</code>. Se centran más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto automatizaremos la prueba de cada endpoint de la API. Nest usará Supertest para simular las llamadas HTTP.</p>
-</li>
-</ul>
-</div>
-<div class="sidebarblock">
+<div class="imageblock">
 <div class="content">
-<div class="title">¿Hace falta probarlo todo?</div>
+<img src="./images/coverageAfterExcludingModules.png" alt="coverageAfterExcludingModules">
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="truepruebas-de-integración"><a class="anchor" href="#truepruebas-de-integración"></a>2.6. Pruebas de integración</h3>
 <div class="paragraph">
-<p>En el proceso de testing decidimos qué probar. Alguien podría decir de probarlo todo con una cobertura cercana al 100%. Sin embargo, no es necesario. Sólo hay que probar las partes más críticas. Puede que esté entre el 70%-90%. Normalmente probaremos</p>
+<p>En las pruebas unitarias comprobamos que partes pequeñas y aisladas del software funcionan según lo esperado. Se encargan de probar unidades sin dependencias o bien mockeando las dependencias para llevar a cabo los tests.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>Servicios (si hay <code>app.service.ts</code> también)</p>
-</li>
-<li>
-<p>Controladores (si hay <code>app.controller.ts</code> también)</p>
-</li>
-<li>
-<p>No hace falta probar DTOs, constantes, entidades y módulos (los podemos excluir de la cobertura -ver <a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">Exclusión de archivos de la cobertura de tests</a>)</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>Sin embargo, las pruebas de integración verifican que varias unidades funcionan correctamente de forma conjunta (p.e. controladores con servicios). Las pruebas de integración prueban su comportamiento de forma conjunta y tratan de reducir al máximo el uso de mocks.</p>
 </div>
+<div class="paragraph">
+<p>Veamos el caso de prueba de integración que genera el CLI de NestJS al crear el proyecto (<code>tests/app.e2e-spec.ts</code>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ts" class="language-ts hljs">import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from './../src/app.module';
+
+describe('AppController (e2e)', () =&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
+  let app: INestApplication;
+
+  beforeEach(async () =&gt; { <i class="conum" data-value="2"></i><b>(2)</b>
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/ (GET)', () =&gt; { <i class="conum" data-value="3"></i><b>(3)</b>
+    return request(app.getHttpServer()) <i class="conum" data-value="4"></i><b>(4)</b>
+      .get('/') <i class="conum" data-value="5"></i><b>(5)</b>
+      .expect(200) <i class="conum" data-value="6"></i><b>(6)</b>
+      .expect('Hello World!'); <i class="conum" data-value="7"></i><b>(7)</b>
+  });
+});</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Bloque de tests</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Función de preparación del entorno de cada test creando de nuevo la aplicación</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Test de un endpoint</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Realización de llamada a la API</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Ir a la ruta indicada</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Código de estado HTTP esperado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>Valor esperado</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Ejecutamos los tests con</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">$ npm run test:e2e</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Esto pasará los tests y devolverá lo siguiente:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="code" class="language-code hljs">PASS  test/app.e2e-spec.ts
+  AppController (e2e)
+    ✓ / (GET) (392 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        2.438 s, estimated 3 s
+Ran all test suites.</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>NestJS usa Supertest para simular las llamadas HTTP.</p>
+</div>
+<div class="paragraph">
+<p>En el archivo <code>tests/jest-e2e.json</code> se definen las opciones de Jest para las pruebas de integración.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$", <i class="conum" data-value="1"></i><b>(1)</b>
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td><code>testRegex</code> define una expresión regular para indicar los archivos que se considerarán sujetos a las pruebas de integración.</td>
+</tr>
+</table>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Una vez visto el ejemplo de base, veamos cómo hacer las pruebas del endpoint de la API de Fizz Buzz. Con esto automatizaremos la prueba de cada endpoint de la API. Para probarlo sobre Fizz Buzz, lo haremos creando un archivo <code>test/fizzbuzz.e2e-spec.ts</code> para los tests de integración de llamada al endpoint con los diferentes valores. Crearemos este archivo copiándolo desde <code>test/app.e2e-spec.ts</code> introduciendo los cambios siguientes:</p>
+</div>
+<div class="paragraph">
+<p>Archivo <code>test/app.e2e-spec.ts</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+
+describe('FizzBuzz (e2e)', () =&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
+  let app: INestApplication;
+
+  beforeEach(async () =&gt; {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/fizzbuzz/3 (GET) should return Fizz', () =&gt; { <i class="conum" data-value="2"></i><b>(2)</b>
+    return request(app.getHttpServer()) <i class="conum" data-value="3"></i><b>(3)</b>
+      .get('/fizzbuzz/3') <i class="conum" data-value="4"></i><b>(4)</b>
+      .expect(200) <i class="conum" data-value="5"></i><b>(5)</b>
+      .expect('Fizz'); <i class="conum" data-value="6"></i><b>(6)</b>
+  });
+});</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Cambiamos la descripción del bloque <code>describe</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Caso de prueba de llamada al endpoint</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Creación de un objeto HTTP para hacer las peticiones</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Acceso a la ruta del endpoint</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Código de estado HTTP esperado</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Respuesta esperada</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Si tuviéramos más endpoints crearíamos más funciones <code>it</code>, una para cada endopoint.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Si ahora volvemos a pasar los tests con <code>npm run test:e2e</code> vemos que se pasan las pruebas de <code>app</code> y de <code>fizzbuzz</code>, pero el resultado se muestra agregado y no incluye el resultado de cada uno de los casos de prueba</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  test/app.e2e-spec.ts
+ PASS  test/fizzbuzz.e2e-spec.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        4.325 s
+Ran all test suites.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Si queremos ver el resultado de cada uno de los casos de prueba dentro de cada suite, haremos el cambio siguiente sobre la configuración de Jest en el archivo <code>package.json</code> incluyendo la opción de <code>--verbose</code> en los tests de integración.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">...
+  "scripts": {
+    ...
+    "test:e2e": "jest --config ./test/jest-e2e.json --verbose" <i class="conum" data-value="1"></i><b>(1)</b>
+  },
+...
+&lt;1&gt; Incluimos la opción `--verbose` para que muestre los resultados individuales de los tests.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Si ahora volvemos a ejecutar los tests de integración con <code>npm run test:e2e</code> vemos que ya sí aparecen los tests de cada suite.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="code" class="language-code hljs"> PASS  test/fizzbuzz.e2e-spec.ts
+  FizzBuzz (e2e)
+    ✓ /fizzbuzz/3 (GET) should return Fizz (380 ms) <i class="conum" data-value="1"></i><b>(1)</b>
+
+ PASS  test/app.e2e-spec.ts
+  AppController (e2e)
+    ✓ / (GET) (377 ms) <i class="conum" data-value="2"></i><b>(2)</b>
+
+Test Suites: 2 passed, 2 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        2.663 s, estimated 4 s
+Ran all test suites.</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Test de integración de FizzBuzz</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Test de integración de app</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="truecaso-de-uso-catálogo-de-productos"><a class="anchor" href="#truecaso-de-uso-catálogo-de-productos"></a>6. Caso de uso. Catálogo de productos</h2>
+<h2 id="truecaso-de-uso-catálogo-de-productos"><a class="anchor" href="#truecaso-de-uso-catálogo-de-productos"></a>3. Caso de uso. Catálogo de productos</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Para ilustrar los tests unitarios y de integración en este tutorial, así como el testing de controladores, servicios y uso de mocks, vamos a desarrollar un caso de uso sobre un API para un catálogo ficticio de productos. La API ofrecerá los endpoints para las operaciones básicas de crear un producto, obtener el listado de productos, obtener un producto a partir de su id, modificar y eliminar un producto.</p>
@@ -1291,7 +1697,7 @@ Time:        3.188 s, estimated 4 s</code></pre>
 </ul>
 </div>
 <div class="paragraph">
-<p>Partimos de un <a href="https://github.com/ualmtorres/testing-product-catalog/tree/base">proyecto creado</a> y disponible en GitHub (rama <code>base</code>). Para más información sobre cómo crear y configurar el proyecto de este caso de uso consultar el <a href="#trueanexo-i-configuración-inicial-del-proyecto">Anexo I. Configuración inicial del proyecto</a></p>
+<p>Partimos de un <a href="https://github.com/ualmtorres/testing-product-catalog/tree/base">proyecto creado</a> y disponible en GitHub (rama <code>base</code>). Para más información sobre cómo crear y configurar el proyecto de este caso de uso consultar el <a href="#Anexo I. Configuración inicial del proyecto">[Anexo I. Configuración inicial del proyecto]</a></p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1362,7 +1768,7 @@ Query OK, 1 row affected (0.00 sec)</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="trueprimeros-tests"><a class="anchor" href="#trueprimeros-tests"></a>6.1. Primeros tests</h3>
+<h3 id="trueprimeros-tests"><a class="anchor" href="#trueprimeros-tests"></a>3.1. Primeros tests</h3>
 <div class="paragraph">
 <p>Comenzamos lanzando los tests sobre el proyecto creado con el comando siguiente</p>
 </div>
@@ -1379,7 +1785,7 @@ Query OK, 1 row affected (0.00 sec)</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truetests-del-controlador"><a class="anchor" href="#truetests-del-controlador"></a>6.2. Tests del controlador</h3>
+<h3 id="truetests-del-controlador"><a class="anchor" href="#truetests-del-controlador"></a>3.2. Tests del controlador</h3>
 <div class="paragraph">
 <p>Los tests del controlador fallan porque mientras que en el arranque de la aplicación se cargan los módulos correctamente, al ejecutar los tests se utiliza módulos diferentes de los del entorno de ejecución. Y lo importante, <strong>inicialmente esos módulos no pueden resolver sus dependencias</strong>. Concretamente, lo que está ocurriendo es que el controlador no puede resolver en el entorno de pruebas su dependencia de <code>ProductService</code></p>
 </div>
@@ -1447,7 +1853,7 @@ describe('ProductController', () =&gt; {
 </table>
 </div>
 <div class="sect3">
-<h4 id="trueprimer-paso-evitar-que-falle-el-test"><a class="anchor" href="#trueprimer-paso-evitar-que-falle-el-test"></a>6.2.1. Primer paso. Evitar que falle el test</h4>
+<h4 id="trueprimer-paso-evitar-que-falle-el-test"><a class="anchor" href="#trueprimer-paso-evitar-que-falle-el-test"></a>3.2.1. Primer paso. Evitar que falle el test</h4>
 <div class="paragraph">
 <p>Seguiremos un enfoque progresivo para conseguir que nuestros tests funcionen. Se trata de ayudar a que en primer lugar desaparezcan los errores de las pruebas del controlador. Posteriormente, se irán refinando los tests.</p>
 </div>
@@ -1562,7 +1968,7 @@ Watch Usage: Press w to show more.</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truesegundo-paso-añadir-tests"><a class="anchor" href="#truesegundo-paso-añadir-tests"></a>6.2.2. Segundo paso. Añadir tests</h4>
+<h4 id="truesegundo-paso-añadir-tests"><a class="anchor" href="#truesegundo-paso-añadir-tests"></a>3.2.2. Segundo paso. Añadir tests</h4>
 <div class="paragraph">
 <p>Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del servicio, vamos a ir creando tests del controlador. Comenzaremos por el de creación de productos añadiendo este test después del test <code>should be defined</code>. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un <code>id</code> (da igual el que sea. En el código de producción sería el <code>id</code> que generaría la base de datos) y el resto de campos coincidirán con los del DTO de creación de producto.</p>
 </div>
@@ -1892,7 +2298,7 @@ Time:        4.542 s, estimated 6 s</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truetercer-paso-llevar-el-mock-del-servicio-a-una-clase"><a class="anchor" href="#truetercer-paso-llevar-el-mock-del-servicio-a-una-clase"></a>6.2.3. Tercer paso. Llevar el mock del servicio a una clase</h4>
+<h4 id="truetercer-paso-llevar-el-mock-del-servicio-a-una-clase"><a class="anchor" href="#truetercer-paso-llevar-el-mock-del-servicio-a-una-clase"></a>3.2.3. Tercer paso. Llevar el mock del servicio a una clase</h4>
 <div class="paragraph">
 <p>Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de <code>mockProductService</code> a métodos en una clase nueva.</p>
 </div>
@@ -2234,7 +2640,7 @@ monitoriza cada una de las llamadas que se hagan al método <code>update</code> 
 </div>
 </div>
 <div class="sect2">
-<h3 id="truetests-del-servicio"><a class="anchor" href="#truetests-del-servicio"></a>6.3. Tests del servicio</h3>
+<h3 id="truetests-del-servicio"><a class="anchor" href="#truetests-del-servicio"></a>3.3. Tests del servicio</h3>
 <div class="paragraph">
 <p>Una vez creados los tests del controlador procederemos a realizar los tests del servicio. De forma análoga a como hicimos con el controlador, que mockeaba el servicio del que dependía, en los tests del servicio también mockearamos sus dependencias. En el caso del servicio se mockea el repositorio, que es su dependencia.</p>
 </div>
@@ -2307,7 +2713,7 @@ describe('ProductService', () =&gt; {
 </table>
 </div>
 <div class="sect3">
-<h4 id="trueprimer-paso-evitar-que-falle-el-test-2"><a class="anchor" href="#trueprimer-paso-evitar-que-falle-el-test-2"></a>6.3.1. Primer paso. Evitar que falle el test</h4>
+<h4 id="trueprimer-paso-evitar-que-falle-el-test-2"><a class="anchor" href="#trueprimer-paso-evitar-que-falle-el-test-2"></a>3.3.1. Primer paso. Evitar que falle el test</h4>
 <div class="paragraph">
 <p>Al igual que hicimos con el controlador, seguiremos un enfoque progresivo para conseguir que nuestros tests funcionen. Se trata de ayudar a que en primer lugar desaparezcan los errores de las pruebas del servicio. Posteriormente, se irán refinando los tests.</p>
 </div>
@@ -2399,7 +2805,7 @@ Time:        6.522 s</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truesegundo-paso-añadir-tests-2"><a class="anchor" href="#truesegundo-paso-añadir-tests-2"></a>6.3.2. Segundo paso. Añadir tests</h4>
+<h4 id="truesegundo-paso-añadir-tests-2"><a class="anchor" href="#truesegundo-paso-añadir-tests-2"></a>3.3.2. Segundo paso. Añadir tests</h4>
 <div class="paragraph">
 <p>Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del repositorio, vamos a ir creando tests del servicio. Comenzaremos por el de creación de productos añadiendo este test después del test <code>should be defined</code>. Con este nuevo test definimos un nuevo DTO para crear un producto y esperamos que nos devuelva un objeto con un id (da igual el que sea. En el código de producción sería el <code>id</code> que generaría la base de datos) y el resto de campos coincidirán con los del DTO de creación de producto.</p>
 </div>
@@ -2614,7 +3020,7 @@ Time:        4.233 s, estimated 6 s</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase"><a class="anchor" href="#truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase"></a>6.3.3. Tercer paso. Llevar el mock del repositorio a una clase</h4>
+<h4 id="truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase"><a class="anchor" href="#truetercer-paso-llevar-el-mock-del-repositorio-a-una-clase"></a>3.3.3. Tercer paso. Llevar el mock del repositorio a una clase</h4>
 <div class="paragraph">
 <p>Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de <code>mockProductsRepository</code> a métodos en una clase nueva.</p>
 </div>
@@ -2810,7 +3216,7 @@ describe('ProductService', () =&gt; {
 </div>
 </div>
 <div class="sect2">
-<h3 id="truetests-end-to-end"><a class="anchor" href="#truetests-end-to-end"></a>6.4. Tests end to end</h3>
+<h3 id="truetests-end-to-end"><a class="anchor" href="#truetests-end-to-end"></a>3.4. Tests end to end</h3>
 <div class="paragraph">
 <p>Este tipo de tests se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto podremos realizar la prueba de cada endpoint de la API. Para simular las llamadas HTTP NestJS usa <a href="https://github.com/visionmedia/supertest">Supertest</a> .</p>
 </div>
@@ -2829,7 +3235,7 @@ describe('ProductService', () =&gt; {
 </table>
 </div>
 <div class="sect3">
-<h4 id="trueañadir-script-para-tests-e2e-en-modo-watch"><a class="anchor" href="#trueañadir-script-para-tests-e2e-en-modo-watch"></a>6.4.1. Añadir script para tests e2e en modo <code>watch</code></h4>
+<h4 id="trueañadir-script-para-tests-e2e-en-modo-watch"><a class="anchor" href="#trueañadir-script-para-tests-e2e-en-modo-watch"></a>3.4.1. Añadir script para tests e2e en modo <code>watch</code></h4>
 <div class="paragraph">
 <p>Podemos lanzar las pruebas e2e generadas al crear el proyecto con el CLI de NestJS. En <code>package.json</code> hay un script para ello: <code>test:e2e</code>. Pero antes de lanzar los tests vamos a introducir un script en <code>package.json</code> para que los tests e2e también se ejecuten en modo <code>watch</code>. Añadiremos los cambios al final del elemento <code>scripts</code>:</p>
 </div>
@@ -2868,7 +3274,7 @@ describe('ProductService', () =&gt; {
 </div>
 </div>
 <div class="sect3">
-<h4 id="trueprimer-paso-evitar-que-falle-el-test-3"><a class="anchor" href="#trueprimer-paso-evitar-que-falle-el-test-3"></a>6.4.2. Primer paso. Evitar que falle el test</h4>
+<h4 id="trueprimer-paso-evitar-que-falle-el-test-3"><a class="anchor" href="#trueprimer-paso-evitar-que-falle-el-test-3"></a>3.4.2. Primer paso. Evitar que falle el test</h4>
 <div class="paragraph">
 <p>Comenzaremos haciendo una copia de <code>test/app.e2e-spec.ts</code>. La nueva copia se denominará <code>test/product.e2e-spec.ts</code>.</p>
 </div>
@@ -2998,7 +3404,7 @@ Time:        5.513 s</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="truesegundo-paso-añadir-tests-3"><a class="anchor" href="#truesegundo-paso-añadir-tests-3"></a>6.4.3. Segundo paso. Añadir tests</h4>
+<h4 id="truesegundo-paso-añadir-tests-3"><a class="anchor" href="#truesegundo-paso-añadir-tests-3"></a>3.4.3. Segundo paso. Añadir tests</h4>
 <div class="paragraph">
 <p>Comenzamos cambiando el único test existente siguiendo los pasos siguientes:</p>
 </div>
@@ -3290,7 +3696,7 @@ Time:        5.623 s, estimated 9 s</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="truecobertura-de-tests-2"><a class="anchor" href="#truecobertura-de-tests-2"></a>6.5. Cobertura de tests</h3>
+<h3 id="truecobertura-de-tests-2"><a class="anchor" href="#truecobertura-de-tests-2"></a>3.5. Cobertura de tests</h3>
 <div class="paragraph">
 <p>Tras realizar los tests del controlador, del servicio y de integración cabe preguntarse la cobertura de tests que tenemos y cuáles son las partes del código del proyecto que aún están sin probar. Para ello lanzaremos la cobertura de tests con</p>
 </div>
@@ -3327,7 +3733,7 @@ Time:        5.623 s, estimated 9 s</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="trueignorando-los-módulos-para-el-análisis-de-la-cobertura"><a class="anchor" href="#trueignorando-los-módulos-para-el-análisis-de-la-cobertura"></a>6.5.1. Ignorando los módulos para el análisis de la cobertura</h4>
+<h4 id="trueignorando-los-módulos-para-el-análisis-de-la-cobertura"><a class="anchor" href="#trueignorando-los-módulos-para-el-análisis-de-la-cobertura"></a>3.5.1. Ignorando los módulos para el análisis de la cobertura</h4>
 <div class="paragraph">
 <p>A continuación excluiremos los archivos de módulo del estudio de cobertura siguiendo la configuración vista en la sección <a href="#trueexclusión-de-archivos-de-la-cobertura-de-tests">Exclusión de archivos de la cobertura de tests</a>. Se trata de incluir en el elemento <code>jest</code> del archivo <code>pagkage.json</code> el código siguiente:</p>
 </div>
@@ -3356,7 +3762,7 @@ Time:        5.623 s, estimated 9 s</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="trueanálisis-de-la-cobertura"><a class="anchor" href="#trueanálisis-de-la-cobertura"></a>6.5.2. Análisis de la cobertura</h4>
+<h4 id="trueanálisis-de-la-cobertura"><a class="anchor" href="#trueanálisis-de-la-cobertura"></a>3.5.2. Análisis de la cobertura</h4>
 <div class="paragraph">
 <p>La cobertura nos da una indicación muy útil para determinar el código que aún no está probado. Por ejemplo, si en el informe de cobertura de la carpeta <code>coverage/lcov-report</code> analizamos la cobertura de <code>src/product/product.controller.ts</code>, observamos el código que aún está sin probar.</p>
 </div>
@@ -3373,7 +3779,31 @@ Time:        5.623 s, estimated 9 s</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="trueanexo-i-configuración-inicial-del-proyecto"><a class="anchor" href="#trueanexo-i-configuración-inicial-del-proyecto"></a>Anexo I. Configuración inicial del proyecto</h2>
+<h2 id="trueanexo-i-plugin-coverage-gutters"><a class="anchor" href="#trueanexo-i-plugin-coverage-gutters"></a>Anexo I. Plugin Coverage Gutters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters">Coverage Gutters</a> es un plugin para Visual Studio Code que permite ver la cobertura de cada archivo mostrando su porcentaje en la barra de estado e indicando en verde y rojo sobre el código las líneas probadas por los tests y las no probadas.</p>
+</div>
+<div class="paragraph">
+<p>Tras instalarlo aparecerá un botón <code>Watch</code> en la barra de estado que podremos activar para que muestre la cobertura del archivo abierto.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/CoverageGuttersBoton.png" alt="CoverageGuttersBoton">
+</div>
+</div>
+<div class="paragraph">
+<p>Tras pulsar el botón, si abrimos un archivo nos mostrará la cobertura directamente en Visual Studio Code. La figura siguiente muestra en verde las líneas probadas, en rojo las líneas no probadas y el porcentaje de cobertura en la barra de estado (50%).</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/CoverageGuttersWatch.png" alt="CoverageGuttersWatch">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="trueanexo-ii-configuración-inicial-del-proyecto"><a class="anchor" href="#trueanexo-ii-configuración-inicial-del-proyecto"></a>Anexo II. Configuración inicial del proyecto</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Recordamos los pasos de creación de una API para un proyecto de ejemplo de un catálogo ficticio de productos. Generaremos también un <em>resource</em> en NestJS para que nos cree el módulo, servicio, controlador, entidad y DTOs. También instalaremos las dependencias de Swagger y TypeORM para MySQL.</p>
@@ -3841,10 +4271,243 @@ defineFeature(feature, (test) =&gt; { <i class="conum" data-value="2"></i><b>(2)
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="trueanexo-iii-ejemplos-de-tests"><a class="anchor" href="#trueanexo-iii-ejemplos-de-tests"></a>Anexo III. Ejemplos de tests</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Happy path</p>
+<div class="ulist">
+<ul>
+<li>
+<p>When transfer is with different currency, receiver gets using his own currency (12ms)</p>
+</li>
+<li>
+<p>When transfer is valid, get back a positive result (13ms)</p>
+</li>
+<li>
+<p>When transfer is valid, a mail is sent to the receiver (16ms)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Missing inputs</p>
+<div class="ulist">
+<ul>
+<li>
+<p>When no amount specified, should throw invalid details error (17ms)</p>
+</li>
+<li>
+<p>When no sender specified, should throw invalid details error (1/ms)</p>
+</li>
+<li>
+<p>When no receiver specified, should throw invalid detalls error (16ms)</p>
+</li>
+<li>
+<p>When no bank specified, should throw invalid details error (15ms)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Post transfer actions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>When transfer is successful, should send mail to receiver (13ms)</p>
+</li>
+<li>
+<p>When transfer as successful, receiver balance should get topped up (14ms)</p>
+</li>
+<li>
+<p>When transter is successful, sender balance is updated with the transfer amount (14ms)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>No credit</p>
+<div class="ulist">
+<ul>
+<li>
+<p>When user is deleted, should not approve the transfer (14ms)</p>
+</li>
+<li>
+<p>When user has no credit, should not approve the transfer (15ms)</p>
+</li>
+<li>
+<p>When receiver lives in forbidden country, should not approve the transfer (14ms)</p>
+</li>
+<li>
+<p>When asking to transfer more than credit, the declined transfer does not appear sender history (12ms)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>By Countries</p>
+<div class="ulist">
+<ul>
+<li>
+<p>When sender from Italy sends a valid payment, transfer is approved (13ms)</p>
+</li>
+<li>
+<p>When sender from India sends a valid payment, transfer is approved (10ms)</p>
+</li>
+<li>
+<p>When sender from US sends a valid payment, transfer is approved (10ms)</p>
+</li>
+<li>
+<p>When sender from Germany sends a valid payment, transfer is approved (10ms)</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="truedomain-objects-vs-entities"><a class="anchor" href="#truedomain-objects-vs-entities"></a>Domain objects vs entities</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Typically, the domain object defines the business object and it&#8217;s properties and methods. It&#8217;s used to manipulate and move the data within the processing system. The Entity object exists to take those domain properties and map them to a persistent storage object, such as a database table.</p>
+</div>
+<div class="paragraph">
+<p>The terms are a bit vague I agree. I would use domain to refer to the business area you are dealing with. Like banking or insurance or what not. Then you have domain models. These are the things you deal with in that business domain, like for domain of banking you have accounts, customers, transfers etc. I would use term entity for referencing the class/POJO or the persisted / concrete version of a model.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="truesorry-cypress"><a class="anchor" href="#truesorry-cypress"></a>Sorry Cypress</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Docker-compose: <a href="https://raw.githubusercontent.com/sorry-cypress/sorry-cypress/master/docker-compose.full.yml" class="bare">https://raw.githubusercontent.com/sorry-cypress/sorry-cypress/master/docker-compose.full.yml</a></p>
+</li>
+<li>
+<p>npm install cy2 cypress</p>
+</li>
+<li>
+<p>Dar de alta el proyecto en localhost:1234. Usar ese id en el cypress.json del proyecto (en <code>projectId</code>).</p>
+</li>
+<li>
+<p>export CYPRESS_API_URL="http://localhost:1234/"</p>
+</li>
+<li>
+<p>./node_modules/cy2/bin/cy2 run --record --key secret --parallel --ci-build-id <code>date +%s</code></p>
+</li>
+<li>
+<p>./node_modules/cy2/bin/cy2 run --record --key secret --parallel --ci-build-id "sip 0.2"</p>
+</li>
+<li>
+<p>Hay que añadir 127.0.0.1 storage en /etc/hosts para que suba los videos</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="trueretales"><a class="anchor" href="#trueretales"></a>Retales</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Añadir el servicio de Fizz Buzz al archivo de testing del controlador.</strong> Este paso es muy importante porque para el testing, NestJS usa otro entorno diferente al de ejecución. Esto hace que el controlador no pueda resolver de forma predererminada su dependencia con el servicio. Es decir, en el archivo de test del controlador no está añadido el servicio Fizzbuzz. Tenemos dos opciones: añadir el servicio en el elemento <code>providers</code> o cargar directamente el módulo que definimos al principio, y que ya incorporaba el controlador y el servicio. Esta última será la opción que utilizaremos aquí y que se muestra en el listado de <code>fizzbuzz/fizzbuzz.controller.spec.ts</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="typescript" class="language-typescript hljs">import { Test, TestingModule } from '@nestjs/testing';
+import { FizzbuzzController } from './fizzbuzz.controller';
+import { FizzbuzzModule } from './fizzbuzz.module';
+
+describe('FizzbuzzController', () =&gt; {
+  let controller: FizzbuzzController;
+
+  beforeEach(async () =&gt; {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [FizzbuzzModule], <i class="conum" data-value="1"></i><b>(1)</b>
+      //controllers: [FizzbuzzController], <i class="conum" data-value="2"></i><b>(2)</b>
+    }).compile();
+
+    controller = module.get&lt;FizzbuzzController&gt;(FizzbuzzController);
+  });
+
+  it('should be defined', () =&gt; {
+    expect(controller).toBeDefined();
+  });
+});</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Módulo añadido para incluir controlador y servicio en el test</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Declaración insuficiente inicial (ahora comentada) en la que sólo se especificaba el controlador y no el servicio.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Si ahora ejecutamos los tests con <code>npm run test</code>, este será su resultado:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"> PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+ PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
+ PASS  src/app.controller.spec.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
+Snapshots:   0 total
+Time:        2.63 s, estimated 3 s
+Ran all test suites.</code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Si no hubiésemos añadido el servicio o el módulo (que incluye controlador y servicio) en <code>fizzbuzz/fizzbuzz.controller.spec.ts</code>, habríamos obtenido el siguiente error al ejecutar <code>npm run test</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">...
+FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts
+
+● FizzbuzzController › should be defined
+    Nest cant resolve dependencies of the FizzbuzzController (?). Please make sure that the argument FizzbuzzService at index [0] is available in the RootTestModule context.
+
+    Potential solutions:
+    - If FizzbuzzService is a provider, is it part of the current RootTestModule?
+    - If FizzbuzzService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing FizzbuzzService */ ]
+      })
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Esto es una señal de que falta por incluir un servicio en la lista de servicios del archivo de tests.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-11-15 16:34:17 +0100
+Last updated 2022-03-15 21:14:52 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">

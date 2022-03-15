@@ -27,7 +27,7 @@ image::logocloudstic.png[]
 ////
 COLOCA A CONTINUACION EL RESUMEN
 ////
-El proceso de testing es una etapa fundamental en el desarrollo de cualquier proyecto serio. Permite dar un feedback inmediato al equipo de desarrollo y hace tener más confianza en la aplicación y durante los procesos de refactorización. NestJS hace el proceso de desarrollo de tests sea más sencillo integrando Jest y Supertest sin configuración al crear un proyecto nuevo. Además, el uso del sistema de inyección de dependencias de NestJS facilita el uso de mocks. En este tutorial se presenta el desarrollo de tests unitarios para controladores y servicios, y el desarrollo de tests de integración, todo sobre un ejemplo en NestJS de una API de un catálogo ficticio de productos.
+El proceso de testing es una etapa fundamental en el desarrollo de cualquier proyecto serio. Permite dar un feedback inmediato al equipo de desarrollo y hace tener más confianza en la aplicación y durante los procesos de refactorización. NestJS hace el proceso de desarrollo de tests sea más sencillo integrando Jest y Supertest sin configuración al crear un proyecto nuevo. Además, el uso del sistema de inyección de dependencias de NestJS facilita el uso de mocks. En este tutorial se presenta el desarrollo de tests unitarios para controladores y servicios, y el desarrollo de tests de integración, todo sobre ejemplos en NestJS de una API de reserva de espacios.
 
 ////
 COLOCA A CONTINUACION LOS OBJETIVOS
@@ -47,8 +47,9 @@ COLOCA A CONTINUACION LOS OBJETIVOS
 Disponibles los repositorios usados en este tutorial.
 
 * https://github.com/ualmtorres/fizzbuzz[Fizz Buzz]
-* https://github.com/ualmtorres/testing-product-catalog/tree/base[Base del caso de uso del catálogdo de productos (Rama `base`)]
+* https://github.com/ualmtorres/testing-product-catalog/tree/base[Base del caso de uso del catálogo de productos (Rama `base`)]
 * https://github.com/ualmtorres/testing-product-catalog/tree/master[Caso de uso del catálogo de productos (en curso)]
+* https://nodisponible.com[Caso de uso de la API de gestión de espacios (No disponible)]
 ====
 
 // Entrar en modo numerado de apartados
@@ -66,28 +67,37 @@ Disponibles los repositorios usados en este tutorial.
 
 * Tipos de testing
 ** Tests unitarios. Son código que ayuda a asegurar que las partes de las aplicaciones funcionan de la forma esperada. La unidad testada puede ser una función, una clase, un módulo. Deben ser independientes unos de otros. Para una entrada, el test unitario comprueba el resultado. No contactan con el mundo exterior
-** Tests de integración. Comprobamos la integración de nuestro sistema con algo de infraestructura (p.e. bases de datos, archivos, E/S, ...). Hacen llamadas a servicios externos.
-** Tests end to end. Simulan condiciones reales. Se ejecutarían en un navegador (o similar). Simulan a un usuario en la aplicación (escribiendo, haciendo clics, ...)
+** Tests de integración. Comprobamos la integración de nuestro sistema con algo de infraestructura (p.e. bases de datos, archivos, E/S, ...). Hacen llamadas a servicios externos. Las pruebas de integración normalmente cubren la prueba de un sistema (p.e. backend) aislándolo del resto.
+** Tests end to end. También conocidas como pruebas funcionales, simulan condiciones reales. Se ejecutarían en un navegador (o similar) y cubren todos los sistemas funcionando juntos (p.e. frontend y backend). Simulan a un usuario en la aplicación (escribiendo, haciendo clics, ...)
 
 image::piramide-testing.png[]
 
 La pirámide de tests, además de representar el coste y la velocidad de ejecucuión de los tests, también refleja que deberíamos escribir más tests de los simples (unitarios) y menos tests de los complejos (end-to-end).
+
+.Nuestras herramientas de Testing
+****
+Para nuestro trabajo de testing de aplicaciones con tecnología JavaScript/TypeScript, en UAL STIC se proponen las herramientas de testing siguientes:
+
+* https://jestjs.io/[Jest] para tests unitarios en backend (pruebas de objetos de dominio, controladores y servicios) así como en frontend.
+* https://github.com/visionmedia/supertest[Supertest] para tests de integración en backend y frontend. Permite hacer las pruebas de llamadas HTTP.
+* https://www.cypress.io/[Cypress] para pruebas e2e que simulen las acciones de los usuarios.
+****
 
 [TIP]
 ====
 El código de los tests tiene que ser fácil de mantener y tiene que centrarse en el resultado del método probado. Después de crear un test nos debemos preguntar lo siguiente: si un día se refactoriza el método probado (sin cambiar su resultado), ¿tendré que cambiar el test? Si la respuesta es sí, hay que modificar el test. Posiblemente en el test nos estemos centrando en detalles del proceso que no deberían de estar en el test.
 ====
 
-NestJS ayuda para que el proceso sea menos tedioso ofreciendo lo siguiente:
+## Introducción al testing con la kata Fizz Buzz
 
-* Scaffolding para tests en la aplicación.
-* Integracion con https://github.com/facebook/jest[Jest] (desarrollado por Facebook y se usa con "cero configuración") y https://github.com/visionmedia/supertest[Supertest] (para testing de peticiones HTTP). No obstante, se puede usar cualquier otro framework de testing.
-* Uso del sistema de inyección de dependencias de NestJS para facilitar el uso de mocks.
-* Jest se configura a través del archivo `package.json` determinando mediante expresiones regulares los archivos que se consideran tests (p.e. para que las pruebas estuviesen en cualquier archivo `.spec.ts` usaríamos `"testRegex": ".*\\.spec\\.ts$"`).
+Para introducirnos al mundo de testing lo haremos de la mano de la https://kata-log.rocks/fizz-buzz-kata[kata Fizz Buzz]. Se trata de un ejemplo sencillo en que para números comprendidos entre 1 y 100:
 
-## Hola mundo
+* Se devolverá _Fizz_ si el número es múltiplo de 3.
+* Se devolverá _Buzz_ si es múltiplo de 5.
+* Se devolverá _Fizzbuzz_ si es múltiplo de 15. 
+* En cualquier otro caso, se devolverá el propio número.
 
-Crearemos un proyecto de ejemplo para la https://kata-log.rocks/fizz-buzz-kata[kata Fizz Buzz]. Se trata de un ejemplo sencillo en que para números comprendidos entre 1 y 100 se devolverá _Fizz_ si el número es múltiplo de 3, _Buzz_ si es múltiplo de 5 o _Fizzbuzz_ si es múltiplo de 15. En caso contrario, se devolverá el propio número.
+Comencemos creando el proyecto NestJS.
 
 [source, bash]
 ----
@@ -120,23 +130,55 @@ Time:        4.162 s
 Ran all test suites.
 ----
 
-### La función `it`
+### Pruebas en NestJS
 
-En Jest, los tests son implementados mediente funciones `it` o `test` (se pueden usar de forma indistinta). La función `it` toma 3 argumentos: nombre del test, función con las expectativas y timeout, este último opcional. El timeout predeterminado es de 5 segundos. A continuación se muestra el test generado por NestJS al crear un proyecto.
+Como acabamos de comentar, el CLI de NestJS instala las dependencias de testing y crea una suite de pruebas a modo de ejemplo al crear un proyecto nuevo. Y es que NestJS ayuda a que el proceso sea menos tedioso ofreciendo lo siguiente:
 
-+
+* Realiza un _scaffolding_ para tests en la aplicación. Cuando creamos controladores y servicios, el CLI de NestJS también crea su correspondiente archivo de testing para dichos controladores y servicios. Al crear el proyecto, el CLI de NestJS también crea un archivo de testing e2e para probar la llamada a la ruta raíz de la aplicación.
+* Integracion con https://github.com/facebook/jest[Jest] (desarrollado por Facebook y se usa con "cero configuración") y https://github.com/visionmedia/supertest[Supertest] (para testing de peticiones HTTP). No obstante, se puede usar cualquier otro framework de testing.
+* Uso del sistema de inyección de dependencias de NestJS para facilitar el uso de mocks. Por ejemplo, esto nos va a poder permitir proporcionar un servicio mockeado al probar un controlador.
+* Jest se configura a través del archivo `package.json` determinando mediante expresiones regulares los archivos que se consideran tests (p.e. para que las pruebas estuviesen en cualquier archivo `.spec.ts` usaríamos `"testRegex": ".*\\.spec\\.ts$"`).
+
+### El archivo de tests `app.controller.spec.ts`
+
+Al crear un proyecto nuevo, el CLI de NestJS crea el archivo de testing `app.controller.spec.ts` como el siguiente.
+
+image::EstructuraArchivoTest.png[]
+
+A continuación presentaremos las partes más significativas de ese archivo.
+
+#### La función `it`
+
+En Jest, los tests se implementan mediante funciones `it` (realmente, `it` es un alias de una función denominada `test`, y se pueden usar de forma indistinta). La función `it` toma 3 argumentos: 
+
+* Nombre del test
+* Función con las expectativas 
+* Timeout (opcional). El timeout predeterminado es de 5 segundos. 
+
+A continuación se muestra el test generado por NestJS en `app.controller.spec.ts` al crear el proyecto.
+
 [source, ts]
 ----
-it('should return "Hello World!"', () => { <1>
-  expect(appController.getHello()).toBe('Hello World!'); <2>
-});
+it( <1>
+  'should return "Hello World!"', <2>
+  () => { <3>
+    expect(appController.getHello()).toBe('Hello World!'); <4>
+  }
+);
 ----
-<1> El usar `it` en lugar de `test`, sumado a usar el nombre del test en condicional, hace el test más legible: `it should return "Hello World!`.
-<2> `expect` se usar para comprobar un valor obtenido por una https://jestjs.io/docs/expect[función matcher], como `toBe`.
+<1> Definición del caso de prueba
+<2> Nombre del caso de prueba
+<3> Función de evaluación del test con la definición de las expectativas
+<4> `expect` se usa para comprobar un valor obtenido por una https://jestjs.io/docs/expect[función matcher], como `toBe`.
 
-### Agrupación de tests
+[NOTE]
+====
+El usar `it` en lugar de `test`, sumado a usar el nombre del test en condicional, hace que el test sea más legible: `it should return "Hello World!`.
+====
 
-Para tener un código de testing más limpio y organizado, los tests (`it`)  se pueden incluir en la función `describe`. Esto da lugar a un código de testing agrupado en bloques `describe` formados por tests `it`. Además, los bloques `describe` se pueden anidar. A continuación se muestra la estructura de agrupación de tests en bloques `describe`.
+#### Agrupación de tests mediante `describe`
+
+Para tener un código de testing más limpio y organizado, los tests (`it`)  se pueden incluir en una función `describe`. Esto da lugar a un código de testing agrupado en bloques `describe`, los cuales están formados por tests `it`. Además, los bloques `describe` se pueden anidar. A continuación se muestra una estructura de agrupación de tests en bloques `describe`.
 
 [source, ts]
 ----
@@ -145,7 +187,7 @@ Para tener un código de testing más limpio y organizado, los tests (`it`)  se 
       expect(appController.getHello()).toBe('Hello World!');
     });
     
-    it('should ....' () => {
+    it('should ....' () => { <3>
       // test code
     });
   });
@@ -154,15 +196,21 @@ Para tener un código de testing más limpio y organizado, los tests (`it`)  se 
 <2> Primer test del bloque
 <3> Un segundo test del bloque
 
-## Tests unitarios
+#### La función `beforeEach`
 
-### La kata Fizz Buzz
+La función `beforeEach` se ejecuta antes de que se ejecute cada test de la suite. Normalmente prepara una configuración que los tests necesitan para ejecutarse de forma independiente al resto de tests (p.e. prepara el contenido de la base de datos, configura un servicio para que devuelva unos datos concretos a los tests, ...)
 
-Para hacer los tests unitarios de la kata seguiremos estos pasos:
+Esta función forma parte del conjunto de funciones de preparación o limpieza del entorno de testing:
 
-. Crearemos un nuevo módulo, servicio y controlador para la kata.
+* `beforeAll` se ejecuta una sola vez antes de todos los tests del bloque.
+* `beforeEach` se ejecuta antes de cada test del bloque.
+* `afterEach` se ejecuta después de cada test del bloque.
+* `afterAll` se ejecuta una sola vez después de todos los tests del bloque.
 
-+
+### Implementación de la kata Fizz Buzz
+
+Comenzamos creando un nuevo módulo, un servicio y un controlador para la kata.
+
 [source, bash]
 ----
 nest g module fizzbuzz
@@ -170,9 +218,9 @@ nest g service fizzbuzz
 nest g controller fizzbuzz
 ----
 
-. _El servicio_. Crearemos un nuevo método en `fizzbuzz/fizzbuzz.service.ts` denominado `fizzbuzz` que aceptará un argumento de tipo `number`. El servicio tiene la lógica siguiente para implementar la https://kata-log.rocks/fizz-buzz-kata[kata Fizz Buzz].
+En el servicio `fizzbuzz/fizzbuzz.service.ts` crearemos un nuevo método denominado `fizzbuzz` que aceptará un argumento de tipo `number`. El servicio tiene la lógica siguiente para implementar la https://kata-log.rocks/fizz-buzz-kata[kata Fizz Buzz].
 
-+
+
 [source, typescript]
 ----
 import { Injectable } from '@nestjs/common';
@@ -202,9 +250,8 @@ export class FizzbuzzService { <1>
 ----
 <1> Método que implementa la kata Fizz Buzz
 
-. _El controlador_. Crearemos un endpoint en `fizzbuzz/fizzbuzz.controller.ts` que acepte un número como parámetro. Este endpoint llamará al método del servicio del paso anterior.
+Para el controlador `fizzbuzz/fizzbuzz.controller.ts` crearemos un endpoint que acepte un número como parámetro. Este endpoint llamará al método del servicio del paso anterior.
 
-+
 [source, ts]
 ----
 import { Controller, Get, Param } from '@nestjs/common';
@@ -223,9 +270,17 @@ export class FizzbuzzController {
 ----
 <1> Nueva ruta para la kata Fizz Buzz
 
-. El CLI de NestJS ha creado el archivo `fizzbuzz/fizzbuzz.service.spec.ts` para los tests del servicio generado. Los tests los añadiremos en el grupo `describe` existente
+Ahora podemos probar la kata con cualuier número:
 
-+
+* `http://localhost:3000/fizzbuzz/3` devolvería _Fizz_
+* `http://localhost:3000/fizzbuzz/5` devolvería _Buzz_
+* `http://localhost:3000/fizzbuzz/15` devolvería _FizzBuzz_
+* `http://localhost:3000/fizzbuzz/2` devolvería _2_
+
+### Pruebas unitarias del servicio 
+
+El CLI de NestJS ha creado el archivo `fizzbuzz/fizzbuzz.service.spec.ts` para los tests del servicio generado. Los tests los añadiremos en el grupo `describe` existente. Se trata de definir los casos de prueba para los casos de testing de la kata (3, 5, 15, ninguno de ellos, fuera del rango 1-100)
+
 [source,ts]
 ----
 import { Test, TestingModule } from '@nestjs/testing';
@@ -275,73 +330,74 @@ describe('FizzbuzzService', () => { <1>
 <4> Con `expect` indicamos lo que queremos probar y con `toBe` indicamos el valor esperado.
 <5> En este caso, quizá sería más apropiado crear dos tests separados para probar cada uno los de límites del rango no permitido (i.e. un test para comprobar que no se aceptan números menores que 1 y otro test para comprobar que no se aceptan números mayores que 100).
 
-. **Añadir el servicio de Fizz Buzz al archivo de testing del controlador.** Este paso es muy importante porque para el testing, NestJS usa otro entorno diferente al de ejecución. Esto hace que el controlador no pueda resolver de forma predererminada su dependencia con el servicio. Es decir, en el archivo de test del controlador no está añadido el servicio Fizzbuzz. Tenemos dos opciones: añadir el servicio en el elemento `providers` o cargar directamente el módulo que definimos al principio, y que ya incorporaba el controlador y el servicio. Esta última será la opción que utilizaremos aquí y que se muestra en el listado de `fizzbuzz/fizzbuzz.controller.spec.ts`.
+.Estructura de un archivo de tests
+****
+Los tests pueden hacer 3 cosas:
 
-+
-[source, typescript]
-----
-import { Test, TestingModule } from '@nestjs/testing';
-import { FizzbuzzController } from './fizzbuzz.controller';
-import { FizzbuzzModule } from './fizzbuzz.module';
+* Preparar el entorno (setup).
+* Llamar a algo (actuar) y verificar el comportamiento (assert o verificar).
+* Destruir lo construido.
 
-describe('FizzbuzzController', () => {
-  let controller: FizzbuzzController;
+En Jest esto lo vemos en los bloques:
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [FizzbuzzModule], <1>
-      //controllers: [FizzbuzzController], <2>
-    }).compile();
+* `beforeAll` prepara el entorno antes de ejecutar las pruebas. Se ejecuta una vez al principio de los tests.
+* `beforeEach` prepara el entorno antes de ejecutar cada prueba. Se ejecuta una vez antes de cada test.
+* `it` o `test` definen un caso de test para cada prueba. En `expect` llamamos a la operación (proceso de actuación) y con los _matchers_ (`toBe, toEqual, toBeGreaterThan, toMatch, toContain, toThrow`, ...) se verifica el test. Más información en la https://jestjs.io/es-ES/docs/using-matchers[página de Comparadores (matchers) de Jest].
+* `afterEach` realiza una operación de destrucción o desmontaje del entorno después de ejecutar cada prueba. Se ejecuta una vez después de cada test.
+* `afterAll` destruye o desmonta el entorno tras finalizar todas las pruebas. Se ejecuta una vez al final de los tests.
+****
 
-    controller = module.get<FizzbuzzController>(FizzbuzzController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
-----
-<1> Módulo añadido para incluir controlador y servicio en el test
-<2> Declaración insuficiente inicial (ahora comentada) en la que sólo se especificaba el controlador y no el servicio.
-
-
-Si ahora ejecutamos los tests con `npm run test`, este será su resultado:
+Para ejecutar sólo los tests del servicio y no los de todo el proyecto, lanzaremos los tests en modo _watch_:
 
 [source, bash]
 ----
- PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+$ npm run test:watch
+----
+
+Se nos indicará el modo de uso para que elijamos uno:
+
+[source, code]
+----
+Watch Usage
+ › Press a to run all tests.
+ › Press f to run only failed tests.
+ › Press p to filter by a filename regex pattern. <1>
+ › Press t to filter by a test name regex pattern.
+ › Press q to quit watch mode.
+ › Press Enter to trigger a test run.
+----
+<1> Opción elegida para pasar los tests a los archivos indicados
+
+Elegiremos `p` para indicar el nombre de archivo del servicio. No hace falta introducir el nombre entero. Basta con una parte del nombre que permita seleccionarlo (p.e. `fizzbuzz.se`)
+
+[source, code]
+----
+Pattern Mode Usage
+ › Press Esc to exit pattern mode.
+ › Press Enter to filter by a filenames regex pattern.
+
+ pattern › fizzbuzz.se <1>
+----
+<1> Expresión que permite seleccionar al servicio a probar
+
+Y este sería el resultado del proceso de testing:
+
+[source, code]
+----
  PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
- PASS  src/app.controller.spec.ts
+  FizzbuzzService
+    ✓ should be defined (25 ms)
+    ✓ should return Fizz when the number is multiple of 3 (6 ms)
+    ✓ should return Buzz when the number is multiple of 5 (4 ms)
+    ✓ should return FizzBuzz when the number is multiple of 15 (21 ms)
+    ✓ should return the number when then number is neither multiple of 3, 5 nor 15 (3 ms)
+    ✓ should return nothing when the number is not between 1 and 100 (5 ms)
 
-Test Suites: 3 passed, 3 total
-Tests:       8 passed, 8 total
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
 Snapshots:   0 total
-Time:        2.63 s, estimated 3 s
-Ran all test suites.
+Time:        2.925 s, estimated 5 s
 ----
-
-[CAUTION]
-====
-Si no hubiésemos añadido el servicio o el módulo (que incluye controlador y servicio) en `fizzbuzz/fizzbuzz.controller.spec.ts`, habríamos obtenido el siguiente error al ejecutar `npm run test`:
-
-[source, bash]
-----
-...
-FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts     
-
-● FizzbuzzController › should be defined
-    Nest cant resolve dependencies of the FizzbuzzController (?). Please make sure that the argument FizzbuzzService at index [0] is available in the RootTestModule context.
-
-    Potential solutions:
-    - If FizzbuzzService is a provider, is it part of the current RootTestModule?
-    - If FizzbuzzService is exported from a separate @Module, is that module imported within RootTestModule?
-      @Module({
-        imports: [ /* the Module containing FizzbuzzService */ ]
-      })
-...
-----
-Esto es una señal de que falta por incluir un servicio en la lista de servicios del archivo de tests.
-====
 
 .Mostrar los datos de cada test
 ****
@@ -388,7 +444,8 @@ Time:        2.575 s, estimated 3 s
 ----
 
 ****
-## Cobertura de tests
+
+### Cobertura de tests
 
 En el proceso de testing la cobertura de tests proporciona una medida muy interesante. Ofrece el porcentaje de código que está incluido en los tests, es decir, el porcentaje de código que se está probando. Esto es muy útil porque nos ayuda a dirigir los esfuerzos para crear tests para el código que aún está oculto a los tests y que puede ser una potencial fuente de errores.
 
@@ -399,66 +456,68 @@ Podemos conocer la cobertura de nuestros tests con:
 $ npm run test:cov
 ----
 
-Esto, además de ejecutar los tests unitarios, nos dará el porcentaje de código testado para cada archivo y a nivel global.
+Esto ejecutará los tests nos dará el porcentaje de código testado para cada archivo y a nivel global.
 
-[source, bash]
+[source, code]
 ----
+ PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
  PASS  src/app.controller.spec.ts
-  AppController
-    root
-      ✓ should return "Hello World!" (11 ms)
-    Fizzbuzz
-      ✓ should return FizzBuzz when the number is multiple of 15 (3 ms)
-      ✓ should return Fizz when the number is multiple of 3 (2 ms)
-      ✓ should return Buzz when the number is multiple of 5 (2 ms)
-      ✓ should return the number when then number is neither multiple of 3, 5 nor 15 (2 ms)
-      ✓ should return nothing when the number is not between 1 and 100 (2 ms)
+ PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
+-------------------------|---------|----------|---------|---------|-------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------------|---------|----------|---------|---------|-------------------
+All files                |   63.46 |      100 |   71.42 |    62.5 |                   
+ src                     |      52 |      100 |      75 |   47.36 |                   
+  app.controller.ts      |     100 |      100 |     100 |     100 |                   
+  app.module.ts          |       0 |      100 |     100 |       0 | 1-11              
+  app.service.ts         |     100 |      100 |     100 |     100 |                   
+  main.ts                |       0 |      100 |       0 |       0 | 1-8               
+ src/fizzbuzz            |   74.07 |      100 |   66.66 |   76.19 |                   
+  fizzbuzz.controller.ts |    87.5 |      100 |      50 |   83.33 | 10                
+  fizzbuzz.module.ts     |       0 |      100 |     100 |       0 | 1-9               
+  fizzbuzz.service.ts    |     100 |      100 |     100 |     100 |                   
+-------------------------|---------|----------|---------|---------|-------------------
 
-
-File               % Stmts % Branch  % Funcs % Lines Uncovered Lines 
-All files            68.57      100    83.33   68.97                
- app.controller.ts     100      100      100     100                   
- app.module.ts           0      100      100       0    1-10              
- app.service.ts        100      100      100     100                    
- main.ts                 0      100        0       0    1-8              
-
-Test Suites: 1 passed, 1 total
-Tests:       6 passed, 6 total
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
 Snapshots:   0 total
-Time:        3.188 s, estimated 4 s
+Time:        7.747 s, estimated 8 s
+Ran all test suites.
 ----
 
-Como resultado también se genera una carpeta `coverage/lcov-coverage` con ese mismo informe, pero en HTML. Además, podemos hacer clic sobre cada archivo y ver su cobertura individual.
+Como resultado también se genera una carpeta `coverage/lcov-report` con ese mismo informe, pero en HTML. Aparece organizado de acuerdo con los carpetas que tengamos en la carpeta `src`. 
 
 image::coverage100.png[]
 
-Si ahora modificamos los tests y comentamos uno de ellos, por ejemplo el que probaba los múltiplos de 15, y volvemos a ejecutar la cobertura de tests con `npm run test:cov` veremos que la cobertura de `app.service.ts` ha bajado de 100% a 92.86%.
+Si hace clic sobre `src/fizzbuzz` veremos su informe de cobertura. Vemos que está probado el 100% del código del servicio.
+
+image::coverage100Fizzbuzz.png[]
+
+Si ahora modificamos los tests de `fizzbuzz/fizzbuzz.service.spec.ts` y comentamos uno de ellos, por ejemplo el que probaba los múltiplos de 15, y volvemos a ejecutar la cobertura de tests con `npm run test:cov`, veremos que la cobertura de `fizzbuzz/fizzbuzz.service.ts` ha bajado de 100% a 92.3%.
 
 image::coverageParcial.png[]
 
-Si ahora hacemos clic sobre `app.service.ts` en el informe, nos llevará al archivo y nos dirá marcará en rojo las líneas de código que no están tratadas (cubiertas) en ningún test.
+Si ahora hacemos clic sobre `fizzbuzz/fizzbuzz.service.ts` en el informe, nos llevará al archivo y nos marcará en rojo las líneas de código que no están tratadas (cubiertas) en ningún test. Como hemos comentado anteriormente, este resultado es muy importante porque nos puede guiar en el proceso de priorización de los próximos tests a desarrollar.
 
 image::codigoNoProbado.png[]
 
 Si anulamos los comentarios del test y volvemos a ejecutar la cobertura de tests todo volverá a estar como antes y ese código ya estará de nuevo cubierto por los tests.
 
-### Plugin Coverage Gutters
+.¿Hace falta probarlo todo?
+****
+En el proceso de testing decidimos qué probar. Alguien podría decir de probarlo todo con una cobertura cercana al 100%. Sin embargo, no es necesario. Sólo hay que probar las partes más críticas. Puede que esté entre el 70%-90%. Normalmente probaremos
 
-https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters[Coverage Gutters] es un plugin para Visual Studio Code que permite ver la cobertura de cada archivo mostrando su porcentaje en la barra de estado e indicando en verde y rojo sobre el código las líneas probadas por los tests y las no probadas.
+* Servicios (si hay `app.service.ts` también)
+* Controladores (si hay `app.controller.ts` también)
+* No hace falta probar DTOs, constantes, entidades y módulos (los podemos excluir de la cobertura -ver <<Exclusión de archivos de la cobertura de tests>>)
 
-Tras instalarlo aparecerá un botón `Watch` en la barra de estado que podremos activar para que muestre la cobertura del archivo abierto.
+****
 
-image::CoverageGuttersBoton.png[]
+#### Exclusión de archivos de la cobertura de tests
 
-Tras pulsar el botón, si abrimos un archivo nos mostrará la cobertura directamente en Visual Studio Code. La figura siguiente muestra en verde las líneas probadas, en rojo las líneas no probadas y el porcentaje de cobertura en la barra de estado (50%). 
+El porcentaje de cobertura de tests que devuelve el informe se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir archivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento `coveragePathIgnorePatterns` del elemento `jest` en el archivo `package.json`.
 
-image::CoverageGuttersWatch.png[]
-
-### Exclusión de archivos de la cobertura de tests
-
-El porcentaje de cobertura de tests que devuelve el informe se obtiene teniendo en cuenta todos los archivos de código del proyecto. Sin embargo, es posible ignorar o excluir arvhivos del proceso de obtención de la cobertura. Esto se realiza indicando nombres de archivo o indicando un patrón en el elemento `coveragePathIgnorePatterns` del elemento `jest` en el archivo `package.json`.
-
-Por ejemplo, si decidimos excluir del proceso de análisis de cobertura de tests los archivos de los módulos (p.e. `app.module.ts`, `product.module.ts` y otros módulos), así quedaría el elemento `jest` en `package.json` para excluir los archivos de módulo:
+Por ejemplo, si decidimos excluir del proceso de análisis de cobertura de tests los archivos de los módulos (p.e. `app.module.ts`, `fizzbuzz.module.ts` y otros módulos), así quedaría el elemento `jest` en `package.json` para excluir los archivos de módulo:
 
 [source, json]
 ----
@@ -483,24 +542,186 @@ Por ejemplo, si decidimos excluir del proceso de análisis de cobertura de tests
 ----
 <1> Ignorar del proceso de cobertura los archivos cuyo nombre termine en `.module.ts`
 
-## Tests de integración
+Esto mejoraría el porcentaje de cobertura ya que se han retirado los archivos de módulo del proceso de cómputo de la cobertura, ya que bajaban la cobertura porque no tenían tests asociados. La figura siguiente ilustra la cobertura total. Se ha pasado de un 63.46% a un 84.61%. Esto en sí no es ni bueno ni malo, ni un objetivo en sí mismo. Es sólo estar informado que hay ciertos archivos que aceptamos no probar y que de no ser excluidos pueden estar datos erróneos de cobertura.
 
-En backend los utilizaremos para testear repositorios. Si hemos seguido el principio de Inversión de dependencias tendremos por un lado una interface con una serie de métodos (p.e. la interface `UserRepository` con los métodos `save` y `find`. Por otro lado, tendremos un conjunto de clases repositorio particulares (p.e. MySQLUserRepository) que implementan esa interface.
+image::coverageAfterExcludingModules.png[]
 
-En este tutorial tratamos tests unitarios y test end-to-end.
 
-* Tests unitarios: `npm run test`. Se centran en los módulos y en las clases. El ejemplo básico incorporado por el CLI de NestJS al crear un proyecto comprueba que la llamada al controlador devuelve `Hello World!`.
-* Tests end-to-end: `npm run test:e2e`. Se centran más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto automatizaremos la prueba de cada endpoint de la API. Nest usará Supertest para simular las llamadas HTTP.
+### Pruebas de integración
 
-.¿Hace falta probarlo todo?
-****
-En el proceso de testing decidimos qué probar. Alguien podría decir de probarlo todo con una cobertura cercana al 100%. Sin embargo, no es necesario. Sólo hay que probar las partes más críticas. Puede que esté entre el 70%-90%. Normalmente probaremos
+En las pruebas unitarias comprobamos que partes pequeñas y aisladas del software funcionan según lo esperado. Se encargan de probar unidades sin dependencias o bien mockeando las dependencias para llevar a cabo los tests.
 
-* Servicios (si hay `app.service.ts` también)
-* Controladores (si hay `app.controller.ts` también)
-* No hace falta probar DTOs, constantes, entidades y módulos (los podemos excluir de la cobertura -ver <<Exclusión de archivos de la cobertura de tests>>)
+Sin embargo, las pruebas de integración verifican que varias unidades funcionan correctamente de forma conjunta (p.e. controladores con servicios). Las pruebas de integración prueban su comportamiento de forma conjunta y tratan de reducir al máximo el uso de mocks. 
 
-****
+Veamos el caso de prueba de integración que genera el CLI de NestJS al crear el proyecto (`tests/app.e2e-spec.ts`).
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest'; 
+import { AppModule } from './../src/app.module';
+
+describe('AppController (e2e)', () => { <1>
+  let app: INestApplication;
+
+  beforeEach(async () => { <2>
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/ (GET)', () => { <3>
+    return request(app.getHttpServer()) <4>
+      .get('/') <5>
+      .expect(200) <6>
+      .expect('Hello World!'); <7>
+  });
+});
+----
+<1> Bloque de tests
+<2> Función de preparación del entorno de cada test creando de nuevo la aplicación
+<3> Test de un endpoint
+<4> Realización de llamada a la API
+<5> Ir a la ruta indicada
+<6> Código de estado HTTP esperado
+<7> Valor esperado
+
+Ejecutamos los tests con
+
+[source, bash]
+----
+$ npm run test:e2e
+----
+
+Esto pasará los tests y devolverá lo siguiente:
+[source, code]
+----
+PASS  test/app.e2e-spec.ts
+  AppController (e2e)
+    ✓ / (GET) (392 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        2.438 s, estimated 3 s
+Ran all test suites.
+----
+
+[NOTE]
+====
+NestJS usa Supertest para simular las llamadas HTTP. 
+
+En el archivo `tests/jest-e2e.json` se definen las opciones de Jest para las pruebas de integración.
+
+[source, json]
+----
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$", <1>
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}
+----
+<1> `testRegex` define una expresión regular para indicar los archivos que se considerarán sujetos a las pruebas de integración.
+====
+
+Una vez visto el ejemplo de base, veamos cómo hacer las pruebas del endpoint de la API de Fizz Buzz. Con esto automatizaremos la prueba de cada endpoint de la API. Para probarlo sobre Fizz Buzz, lo haremos creando un archivo `test/fizzbuzz.e2e-spec.ts` para los tests de integración de llamada al endpoint con los diferentes valores. Crearemos este archivo copiándolo desde `test/app.e2e-spec.ts` introduciendo los cambios siguientes:
+
+Archivo `test/app.e2e-spec.ts`
+[source, typescript]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+
+describe('FizzBuzz (e2e)', () => { <1>
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/fizzbuzz/3 (GET) should return Fizz', () => { <2>
+    return request(app.getHttpServer()) <3>
+      .get('/fizzbuzz/3') <4>
+      .expect(200) <5>
+      .expect('Fizz'); <6>
+  });
+});
+
+----
+<1> Cambiamos la descripción del bloque `describe`
+<2> Caso de prueba de llamada al endpoint
+<3> Creación de un objeto HTTP para hacer las peticiones
+<4> Acceso a la ruta del endpoint
+<5> Código de estado HTTP esperado
+<6> Respuesta esperada
+
+[NOTE]
+====
+Si tuviéramos más endpoints crearíamos más funciones `it`, una para cada endopoint.
+====
+
+Si ahora volvemos a pasar los tests con `npm run test:e2e` vemos que se pasan las pruebas de `app` y de `fizzbuzz`, pero el resultado se muestra agregado y no incluye el resultado de cada uno de los casos de prueba
+
+[source, bash]
+----
+ PASS  test/app.e2e-spec.ts
+ PASS  test/fizzbuzz.e2e-spec.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        4.325 s
+Ran all test suites.
+----
+
+Si queremos ver el resultado de cada uno de los casos de prueba dentro de cada suite, haremos el cambio siguiente sobre la configuración de Jest en el archivo `package.json` incluyendo la opción de `--verbose` en los tests de integración.
+
+[source, json]
+----
+...
+  "scripts": {
+    ...
+    "test:e2e": "jest --config ./test/jest-e2e.json --verbose" <1>
+  },
+...
+<1> Incluimos la opción `--verbose` para que muestre los resultados individuales de los tests.
+----
+
+Si ahora volvemos a ejecutar los tests de integración con `npm run test:e2e` vemos que ya sí aparecen los tests de cada suite.
+
+[source, code]
+----
+ PASS  test/fizzbuzz.e2e-spec.ts
+  FizzBuzz (e2e)
+    ✓ /fizzbuzz/3 (GET) should return Fizz (380 ms) <1>
+
+ PASS  test/app.e2e-spec.ts
+  AppController (e2e)
+    ✓ / (GET) (377 ms) <2>
+
+Test Suites: 2 passed, 2 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        2.663 s, estimated 4 s
+Ran all test suites.
+----
+<1> Test de integración de FizzBuzz
+<2> Test de integración de app
 
 ## Caso de uso. Catálogo de productos
 
@@ -1898,7 +2119,20 @@ La figura nos da una indicación de los métodos en los que deberíamos centrar 
 
 :numbered!: 
 
-## Anexo I. Configuración inicial del proyecto
+## Anexo I. Plugin Coverage Gutters
+
+https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters[Coverage Gutters] es un plugin para Visual Studio Code que permite ver la cobertura de cada archivo mostrando su porcentaje en la barra de estado e indicando en verde y rojo sobre el código las líneas probadas por los tests y las no probadas.
+
+Tras instalarlo aparecerá un botón `Watch` en la barra de estado que podremos activar para que muestre la cobertura del archivo abierto.
+
+image::CoverageGuttersBoton.png[]
+
+Tras pulsar el botón, si abrimos un archivo nos mostrará la cobertura directamente en Visual Studio Code. La figura siguiente muestra en verde las líneas probadas, en rojo las líneas no probadas y el porcentaje de cobertura en la barra de estado (50%). 
+
+image::CoverageGuttersWatch.png[]
+
+
+## Anexo II. Configuración inicial del proyecto
 
 Recordamos los pasos de creación de una API para un proyecto de ejemplo de un catálogo ficticio de productos. Generaremos también un _resource_ en NestJS para que nos cree el módulo, servicio, controlador, entidad y DTOs. También instalaremos las dependencias de Swagger y TypeORM para MySQL.
 
@@ -2265,3 +2499,126 @@ Otras extesiones interesantes para Visual Studio Code:
 * Para ejecutar sólo los tests BDD: `npm run test:bdd`
 
 Enlace: https://github.com/bencompton/jest-cucumber#readme
+
+## Anexo III. Ejemplos de tests
+
+* Happy path
+
+** When transfer is with different currency, receiver gets using his own currency (12ms)
+** When transfer is valid, get back a positive result (13ms)
+** When transfer is valid, a mail is sent to the receiver (16ms)
+
+* Missing inputs
+
+** When no amount specified, should throw invalid details error (17ms)
+** When no sender specified, should throw invalid details error (1/ms)
+** When no receiver specified, should throw invalid detalls error (16ms)
+** When no bank specified, should throw invalid details error (15ms)
+
+* Post transfer actions
+
+** When transfer is successful, should send mail to receiver (13ms)
+** When transfer as successful, receiver balance should get topped up (14ms)
+** When transter is successful, sender balance is updated with the transfer amount (14ms)
+
+* No credit
+
+** When user is deleted, should not approve the transfer (14ms) 
+** When user has no credit, should not approve the transfer (15ms)
+** When receiver lives in forbidden country, should not approve the transfer (14ms)
+** When asking to transfer more than credit, the declined transfer does not appear sender history (12ms)
+
+* By Countries
+
+** When sender from Italy sends a valid payment, transfer is approved (13ms)
+** When sender from India sends a valid payment, transfer is approved (10ms)
+** When sender from US sends a valid payment, transfer is approved (10ms)
+** When sender from Germany sends a valid payment, transfer is approved (10ms)
+
+## Domain objects vs entities
+
+Typically, the domain object defines the business object and it's properties and methods. It's used to manipulate and move the data within the processing system. The Entity object exists to take those domain properties and map them to a persistent storage object, such as a database table.
+
+The terms are a bit vague I agree. I would use domain to refer to the business area you are dealing with. Like banking or insurance or what not. Then you have domain models. These are the things you deal with in that business domain, like for domain of banking you have accounts, customers, transfers etc. I would use term entity for referencing the class/POJO or the persisted / concrete version of a model.
+
+## Sorry Cypress
+
+* Docker-compose: https://raw.githubusercontent.com/sorry-cypress/sorry-cypress/master/docker-compose.full.yml
+* npm install cy2 cypress
+* Dar de alta el proyecto en localhost:1234. Usar ese id en el cypress.json del proyecto (en `projectId`).
+* export CYPRESS_API_URL="http://localhost:1234/"
+* ./node_modules/cy2/bin/cy2 run --record --key secret --parallel --ci-build-id `date +%s`
+* ./node_modules/cy2/bin/cy2 run --record --key secret --parallel --ci-build-id "sip 0.2"
+* Hay que añadir 127.0.0.1 storage en /etc/hosts para que suba los videos 
+
+
+
+## Retales
+
+**Añadir el servicio de Fizz Buzz al archivo de testing del controlador.** Este paso es muy importante porque para el testing, NestJS usa otro entorno diferente al de ejecución. Esto hace que el controlador no pueda resolver de forma predererminada su dependencia con el servicio. Es decir, en el archivo de test del controlador no está añadido el servicio Fizzbuzz. Tenemos dos opciones: añadir el servicio en el elemento `providers` o cargar directamente el módulo que definimos al principio, y que ya incorporaba el controlador y el servicio. Esta última será la opción que utilizaremos aquí y que se muestra en el listado de `fizzbuzz/fizzbuzz.controller.spec.ts`.
+
+
+[source, typescript]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { FizzbuzzController } from './fizzbuzz.controller';
+import { FizzbuzzModule } from './fizzbuzz.module';
+
+describe('FizzbuzzController', () => {
+  let controller: FizzbuzzController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [FizzbuzzModule], <1>
+      //controllers: [FizzbuzzController], <2>
+    }).compile();
+
+    controller = module.get<FizzbuzzController>(FizzbuzzController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+----
+<1> Módulo añadido para incluir controlador y servicio en el test
+<2> Declaración insuficiente inicial (ahora comentada) en la que sólo se especificaba el controlador y no el servicio.
+
+
+Si ahora ejecutamos los tests con `npm run test`, este será su resultado:
+
+[source, bash]
+----
+ PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+ PASS  src/fizzbuzz/fizzbuzz.service.spec.ts
+ PASS  src/app.controller.spec.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
+Snapshots:   0 total
+Time:        2.63 s, estimated 3 s
+Ran all test suites.
+----
+
+[CAUTION]
+====
+Si no hubiésemos añadido el servicio o el módulo (que incluye controlador y servicio) en `fizzbuzz/fizzbuzz.controller.spec.ts`, habríamos obtenido el siguiente error al ejecutar `npm run test`:
+
+[source, bash]
+----
+...
+FAIL  src/fizzbuzz/fizzbuzz.controller.spec.ts     
+
+● FizzbuzzController › should be defined
+    Nest cant resolve dependencies of the FizzbuzzController (?). Please make sure that the argument FizzbuzzService at index [0] is available in the RootTestModule context.
+
+    Potential solutions:
+    - If FizzbuzzService is a provider, is it part of the current RootTestModule?
+    - If FizzbuzzService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing FizzbuzzService */ ]
+      })
+...
+----
+Esto es una señal de que falta por incluir un servicio en la lista de servicios del archivo de tests.
+====
