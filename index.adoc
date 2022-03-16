@@ -546,6 +546,202 @@ Esto mejoraría el porcentaje de cobertura ya que se han retirado los archivos d
 
 image::coverageAfterExcludingModules.png[]
 
+### Pruebas unitarias del controlador
+
+La cobertura de tests realizada en el apartado anterior nos ha servido para determinar el grado de código que tenemos testado. Hemos visto que tenemos tests para el servicio que prueban el 100% del código de sus métodos. Sin embargo, si vemos la cobertura del controlador, vemos que el código del endpoint (método `fizzbuzz`) aún está sin probar, tal y como muestra la figura siguiente.
+
+image::FizzBuzzControllerSinProbar.png[]
+
+Esto nos sugiere que debemos introducir más tests unitarios en el controlador. Para ello, y como las pruebas unitarias han de ser eso, unitarias, y ejecutarse de forma aislada, la prueba del controlador no deberá apoyarse en el método ya implementado en su servicio. Esto nos lleva a la introducción de la técnica de _mocking_ para el desarrollo de pruebas unitarias. Aquí veremos cómo mockear el servicio de Fizz Buzz para que la prueba del controlador sea independiente.
+
+La técnica de _mocking_ en un controlador básicamente va a consistir en dar una nueva implementación (el _mock_) de los servicios que usa, y usar dicha nueva implementación o _mock_ para probar el controlador. Esto lo podemos llevar a cabo de dos formas: mockeando un método concreto del servicio mediante `jest.spyOn` o mockeando el servicio completo.
+
+#### Mockeo mediante `jest.spyOn`
+
+`jest.spyOn` nos permite crear una nueva implementación (_mock_) sobre un método existente de un objeto. Seguiremos este patrón
+
+[source, ts]
+----
+jest.spyOn(<<objeto>>, '<<metodo-existente>>')
+    .mockImplementation(<<nueva-implementacion>>);
+----
+
+De esta forma, cada vez que se llame en el test al método mockeado, el método se ejecutará con la nueva implementación proporcionada en `mockImplementation`.
+
+A continuación mockearemos para la prueba del controlador el método `fizzbuzz` del servicio de forma que devuelva siempre `Fizz`.
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { FizzbuzzController } from './fizzbuzz.controller';
+import { FizzbuzzService } from './fizzbuzz.service';
+
+describe('FizzbuzzController', () => {
+  let controller: FizzbuzzController;
+  let service: FizzbuzzService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [FizzbuzzController],
+      providers: [FizzbuzzService], <1>
+    }).compile();
+
+    controller = module.get<FizzbuzzController>(FizzbuzzController);
+    service = module.get<FizzbuzzService>(FizzbuzzService); <2>
+  });
+
+  it('should return the correct Fizz Buzz word according the introduced number (Using spyOn)', () => { <3>
+    const result = 'Fizz'; <4>
+
+    jest.spyOn(service, 'fizzbuzz').mockImplementation(() => result); <5>
+
+    expect(controller.fizzbuzz(3)).toBe(result); <6>
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+----
+<1> Incorporación del servicio para poder usarlo desde el controlador
+<2> Creación de un objeto para el servicio
+<3> Declaración del test
+<4> Configuración del valor que esperamos
+<5> Mockear el método `fizzbuzz` del servicio creado para que siempre devuelva lo configurado en `result`
+<6> Ejecutar el método `fizzbuzz` del controlador y comprobar que el resultado es correcto
+
+Como el método `fizzbuzz` ahora está mockeado en el test, la implementación que se usará es la propocionada. En este caso, siempre devuelve lo que hemos configurado en `result` (`Fizz` para este ejemplo).
+
+A continuación se muestra el resultado de pasar los tests al controlador con `npm run test:watch` y pasándole `fizzbuzz.co` como patrón de archivo.
+
+[source, code]
+----
+ PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+  FizzbuzzController
+    ✓ should return the correct Fizz Buzz word according the introduced number (Using spyOn) (14 ms) <1>
+    ✓ should be defined (3 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        4.621 s
+Ran all test suites matching /fizzbuzz.co/i.
+
+Watch Usage: Press w to show more.
+----
+<1> Test pasado con éxito
+
+[NOTE]
+====
+Con el testing unitario del controlador se trata de probar si los métodos del controlador tienen algún tipo de error. Damos por hecho que el servicio funciona correctamente. Y la opción de hacer la prueba como una petición `GET HTTP` no procede porque cae en el ámbito de las <<Pruebas de integración>>.
+====
+
+#### Mockeado del servicio completo
+
+Otra alternativa al mockeado de un método concreto de un servicio es el mockeado del servicio completo. Se trata entonces de mockear todos los métodos del servicio. Podremos hacerlo mockeando el servicio en la misma clase en la que se va a usar, o bien, mockearlo en una clase aparte, lo que permitirá su reutilización. Por sencillez, aquí lo mockearemos in situ y no en una clase aparte.
+
+La forma de proceder se podría resumir así:
+
+. Crear un objeto para el mock del servicio y que dicho objeto contenga la nueva implementación de cada uno de sus métodos. El mockeo se realizará mediante un objeto JSON formado por pares _método-valor devuelto_.
+. Sustituir el servicio en la definición del módulo del test (normalmente en el `Test.createTestingModule` dentro del `beforeEach`) por el servicio mockeado.
+
+Veamos cómo hacerlo.
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { FizzbuzzController } from './fizzbuzz.controller';
+import { FizzbuzzService } from './fizzbuzz.service';
+
+describe('FizzbuzzController', () => {
+  let controller: FizzbuzzController;
+  let service: FizzbuzzService;
+
+  let mockedFizzBuzzValue = 'Buzz'; <1>
+  let mockFizzBuzzService = { <2>
+    fizzbuzz: () => mockedFizzBuzzValue, <3>
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [FizzbuzzController],
+      providers: [FizzbuzzService],
+    })
+      .overrideProvider(FizzbuzzService) <4>
+      .useValue(mockFizzBuzzService) <5>
+      .compile();
+
+    controller = module.get<FizzbuzzController>(FizzbuzzController);
+    service = module.get<FizzbuzzService>(FizzbuzzService);
+  });
+
+  it('should return the correct Fizz Buzz word according the introduced number (Using spyOn)', () => {
+    const result = 'Fizz';
+
+    const fizzbuzzSpy = jest.spyOn(service, 'fizzbuzz');
+    fizzbuzzSpy.mockImplementation(() => result);
+
+    expect(controller.fizzbuzz(3)).toBe(result);
+
+    fizzbuzzSpy.mockRestore();
+  });
+
+  it('should return the correct Fizz Buzz word according the introduced number (Using mocking de servicios)', () => { <6>
+    expect(controller.fizzbuzz(5)).toBe(mockedFizzBuzzValue); <7>
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+----
+<1> Configuración del valor devuelto por el servicio mockeado
+<2> Objeto que va a representar al servicio mockeado
+<3> Mock del método `fizzbuzz` y su respuesta mockeada. Es un par _método-valor devuelto_
+<4> Servicio a mockear
+<5> Reemplazar el servicio por el objeto que tiene el mock del servicio
+<6> Definición del caso de prueba
+<7> Lanzar el método `fizzbuzz` del controlador y comprobar que devuelve el valor mockeado
+
+Al igual que antes, cuando el controlador llama a su método `fizzbuzz`, éste llama al método del servicio, pero el controlador no sabe que el método está mockeado. Un engaño en toda regla.
+
+image::trileros.jpg[]
+
+Por tanto, con esta implementación, cada vez que se llame al método `fizzbuzz` éste devolverá la respuesta mockeada (`Buzz`) en este caso. Con esto habremos comprobado el funcionamiento del controlador en sí y de forma independiente del servicio. Sólo hacemos la prueba con un valor del servicio puesto que la validez del servicio con distintos valores cae en el ámbito de las pruebas unitarias del servicio, no en las del controlador.
+
+[NOTE]
+====
+En nuestro caso no vamos a notar la diferencia entre el mockeo con `jest.spyOn` y el mockeo del servicio completo porque el servicio de Fizz Buzz cuenta sólo con un método. En servicios con más métodos, el mockeo del servicio completo exige mockear todos los métodos, mientras que el mockeo con `jest.spyOn_ permite ser mñás finos y mockear un sólo método y dejar el resto del servicio inalterado.
+====
+
+Tras los cambios, se vuelven a pasar los tests y este es su resultado:
+
+[source, code]
+----
+ PASS  src/fizzbuzz/fizzbuzz.controller.spec.ts
+  FizzbuzzController
+    ✓ should return the correct Fizz Buzz word according the introduced number (Using spyOn) (14 ms)
+    ✓ should return the correct Fizz Buzz word according the introduced number (Using mocking de servicios) (3 ms) <1>
+    ✓ should be defined (3 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        3.202 s, estimated 5 s
+Ran all test suites matching /fizzbuzz.co/i.
+
+Watch Usage: Press w to show more.
+----
+<1> Test con el servicio mockeado al completo
+
+El test con `jest.spyOn` sigue funcionando porque recordemos que él tiene su propia implementación del mock del método, independientemente de que se haya mockeado el servicio por completo.
+
+Para finalizar, si ahora volvemos a hacer la cobertura de tests, el controlador ya aparece testado y la cobertura habrá subido. Las figuras siguientes lo ilustran.
+
+image::ContollerCoverageTesting100.png[]
+
+image::FullCoverageOnController.png[]
+
 
 ### Pruebas de integración
 
@@ -610,6 +806,8 @@ Snapshots:   0 total
 Time:        2.438 s, estimated 3 s
 Ran all test suites.
 ----
+
+Este test ha atacado directamente a la API a través del controlador de Fizz Buzz. Este ha usado el servicio y ha devuelto la respuesta a la petición realizada. Es decir, han intervenido tanto la aplicación, como el controlador de Fizz Buzz, como su servicio. Por eso es que recibe el nombre de prueba de integración, porque combina/integra a varias partes de la aplicación en un solo test.
 
 [NOTE]
 ====
