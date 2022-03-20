@@ -47,9 +47,8 @@ COLOCA A CONTINUACION LOS OBJETIVOS
 Disponibles los repositorios usados en este tutorial.
 
 * https://github.com/ualmtorres/fizzbuzz[Fizz Buzz]
-* https://github.com/ualmtorres/testing-product-catalog/tree/base[Base del caso de uso del catálogo de productos (Rama `base`)]
-* https://github.com/ualmtorres/testing-product-catalog/tree/master[Caso de uso del catálogo de productos (en curso)]
-* https://nodisponible.com[Caso de uso de la API de gestión de espacios (No disponible)]
+* https://github.com/ualmtorres/nestjs-espacios/tree/base[Base del caso de uso de la API de gestión de espacios para el tutorial (Rama `base`)]
+* https://github.com/ualmtorres/nestjs-espacios/tree/master[Caso de uso de la API de gestión de espacios para el tutorial (Rama `master`)] (**en curso**)
 ====
 
 // Entrar en modo numerado de apartados
@@ -144,6 +143,8 @@ Como acabamos de comentar, el CLI de NestJS instala las dependencias de testing 
 Al crear un proyecto nuevo, el CLI de NestJS crea el archivo de testing `app.controller.spec.ts` como el siguiente.
 
 image::EstructuraArchivoTest.png[]
+
+En la figura vemos una característica muy interesante del testing en NestJS y es que permite la creación de módulos para el testing sobre la marcha (gracias a la inyección de dependencias). Esto permitirá configurar _ad-hoc_ las dependencias necesarias para la ejecución de los tests. Y no se trata sólo de importar o usar módulos o providers previamente creados en la aplicación, sino que a la hora de configurar el módulo para la ejecución de los tests podemos _mockear_ lo que queramos (servicios, repositorios para bases de datos, ...) sustituyendo la implementación original por un _mock_ para el desarrollo de los tests. Esto lo veremos más adelante en <<Pruebas unitarias del controlador>>.
 
 A continuación presentaremos las partes más significativas de ese archivo.
 
@@ -921,9 +922,1526 @@ Ran all test suites.
 <1> Test de integración de FizzBuzz
 <2> Test de integración de app
 
+## Caso de uso. Reserva de espacios
+
+Para ilustrar en este tutorial los tests unitarios y de integración sobre una API REST que interactúe con una bases de datos, así como el testing de controladores, servicios y uso de mocks, vamos a desarrollar un caso de uso sobre una API de solicitud de espacios. La API ofrecerá los endpoints para las operaciones básicas de crear una solicitud, obtener el listado de solicitudes, obtener una solicitud a partir de su id, modificar y eliminar una solicitud.
+
+Para no complicar demasiado el ejemplo pero que también dé juego, de cada solicitud se guarda:
+
+* `id`: numérico
+* `nombre`: cadena
+* `cargo`: cadena
+* `unidad`: cadena
+* `telefono`: cadena
+* `email`: cadena
+* `tipo`: cadena
+* `nombreActividad`: cadena
+* `start`: fecha
+* `end`: fecha
+* `dia`: cadena (día de la semana)
+* `horaInicio`: numérico (sólo guardaremos las horas sin los minutos)
+* `horaFin`: numérico (sólo guardaremos las horas sin los minutos)
+
+Partimos de un https://github.com/ualmtorres/nestjs-espacios/tree/base[repositorio base] disponible en GitHub (rama `base`) con el código incial de base para poder seguir este tutorial. Para más información sobre cómo crear y configurar el proyecto de este caso de uso consultar el <<Anexo II. Configuración inicial del proyecto>>
+
+El proyecto clonado ya tiene definidos los controladores, servicios, DTOs, entidades así como los archivos de testing .
+[NOTE]
+====
+Para clonar la rama `base`, clonar el repositorio con este comando
+
+[source, bash]
+----
+$ git clone -b base https://github.com/ualmtorres/nestjs-espacios/tree/base
+----
+====
+
+El proyecto utiliza SQLite como base de datos, incorpora autenticación JWT para los endpoints y usa Swagger OpenAPI. Tiene la estructura siguiente. 
+
+[source, code]
+----
+├── LICENSE.md
+├── README.md
+├── dev.sqlite
+├── nest-cli.json
+├── package-lock.json
+├── package.json <1>
+├── src
+│   ├── app.controller.spec.ts <2>
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   ├── app.service.ts
+│   ├── auth <3>
+│   │   ├── auth.module.ts
+│   │   └── jwt.strategy.ts
+│   ├── config <4>
+│   │   ├── configuration.ts
+│   │   └── database-config.service.ts
+│   ├── espacio <5>
+│   │   ├── dto
+│   │   │   ├── create-espacio.dto.ts
+│   │   │   └── update-espacio.dto.ts
+│   │   ├── entities
+│   │   │   └── espacio.entity.ts
+│   │   ├── espacio.controller.spec.ts <6>
+│   │   ├── espacio.controller.ts
+│   │   ├── espacio.module.ts
+│   │   ├── espacio.service.spec.ts <7>
+│   │   ├── espacio.service.ts
+│   │   └── ponicode
+│   ├── main.ts
+│   ├── reserva <8>
+│   │   ├── dto
+│   │   │   ├── create-reserva.dto.ts
+│   │   │   └── update-reserva.dto.ts
+│   │   ├── entities
+│   │   │   └── reserva.entity.ts
+│   │   ├── reserva.controller.spec.ts <9>
+│   │   ├── reserva.controller.ts
+│   │   ├── reserva.module.ts
+│   │   ├── reserva.service.spec.ts <10>
+│   │   └── reserva.service.ts
+│   └── solicitud <11>
+│       ├── dto
+│       │   ├── create-solicitud.dto.ts
+│       │   └── update-solicitud.dto.ts
+│       ├── entities
+│       │   └── solicitud.entity.ts
+│       ├── solicitud.controller.spec.ts <12>
+│       ├── solicitud.controller.ts
+│       ├── solicitud.module.ts
+│       ├── solicitud.service.spec.ts <13>
+│       └── solicitud.service.ts
+├── test <14>
+│   ├── app.e2e-spec.ts  <15>
+│   └── jest-e2e.json <16>
+├── tsconfig.build.json
+└── tsconfig.json
+----
+<1> Aquí se realiza la configuración de Jest
+<2> Archivo de pruebas de `app.controller`
+<3> Carpeta de configuración del módulo de autenticación JWT
+<4> Carpeta de configuración de la aplicación y de la base de datos
+<5> Carpeta de los objetos relativos a los espacios
+<6> Archivo de pruebas del controlador de espacios
+<7> Archivo de pruebas del servicio de espacios
+<8> Carpeta de los objetos relativos a las reservas
+<9> Archivo de pruebas del controlador de reservas
+<10> Archivo de pruebas del servicio de reservas
+<11> Carpeta de los objetos relativos a las solicitudes
+<12> Archivo de pruebas del controlador de solicitudes
+<13> Archivo de pruebas del servicio de solicitudes
+<14> Carpeta de configuración de los tests de integración
+<15> Archivo de test de integración inicial generado por el CLI de Nest
+<16> Archivo de connfiguración de Jest para los tests de integración
+
+### Primeros tests
+
+ 
+Comenzamos lanzando los tests sobre el proyecto creado con el comando siguiente
+
+[source, bash]
+----
+$ npm run test
+----
+
+Tras unos instantes comprobamos que se han ejecutado 7 suites de tests, pero sólo una se ha ejecutado con éxito, la de `src/app.controller.spec.ts`. Sin embargo, ningún test de controlador:
+
+* `solicitud.controller.spec.ts`
+* `espacio.controller.spec.ts`
+* `reserva.controller.spec.ts`
+
+ni de servicio:
+
+* `solicitud.service.spec.ts`
+* `espacio.service.spec.ts`
+* `reserva.service.spec.ts`
+
+ha tenido éxito. En todos los casos nos indica que no está definido su _provider_.
+
+A continuación veremos cómo resolver estos problemas y lo haremos desde el controlador hacia adentro. Es decir, primero haremos los tests unitarios del controlador y después los tests unitarios del servicio. Explicaremos este proceso sobre las solicitudes, dejando la parte de espacios y reservas para mostrar únicamente los tests, pero ya sin explicaciones, ya que serán análogas a las descritas para solicitudes.
+
+Finalmente, dedicaremos una sección a realizar los tests de integración.
+
+### Tests del controlador de solicitudes
+
+Los tests del controlador fallan porque mientras que en el arranque de la aplicación se cargan los módulos correctamente, al ejecutar los tests se utilizan módulos diferentes de los del entorno de ejecución/desarrollo. Y lo importante, **en el entorno de testing inicialmente esos módulos no pueden resolver sus dependencias**. Concretamente, lo que está ocurriendo es que el controlador no puede resolver en el entorno de pruebas su dependencia de `SolicitudService`
+
+Extracto del archivo `solicitud/solicitud.controller.ts`:
+[source, ts]
+----
+...
+@Controller('solicitud')
+...
+export class SolicitudController {
+  constructor(private readonly solicitudService: SolicitudService) {}
+ <1>
+...
+----
+<1> Dependencia del controlador respecto a `SolicitudService`
+
+En el código siguiente del test del controlador, generado por el CLI de NestJS al generar el controlador, vemos que dentro de `beforeEach` se usa la clase `Test` y un método `createTestingModule`. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. `imports`, `providers`, `controllers` ...). Tras definir el nuevo módulo (el de testing) y llamar al método `compile` se crea el módulo para testing con sus dependencias similar a los módulos creados para el entorno de ejecución.
+
+Archivo `src/solicitud/solicitud.controller.spec.ts`
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { SolicitudController } from './solicitud.controller';
+import { SolicitudService } from './solicitud.service';
+
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({ <1>
+      controllers: [SolicitudController],
+      providers: [SolicitudService], <2>
+    }).compile();
+
+    controller = module.get<SolicitudController>(SolicitudController); <3>
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+----
+<1> Definición del módulo para el testing del controlador
+<2> Servicio a utilizar
+<3> Creación de una instancia del controller
+
+#### Primer paso. Evitar que falle el test
+
+Seguiremos un enfoque progresivo para conseguir que nuestros tests funcionen. Se trata de ayudar a que en primer lugar desaparezcan los errores de las pruebas del controlador. Posteriormente, se irán refinando los tests.
+
+El test del controlador falla porque el controlador no es capaz de resolver sus dependencias. Lo que haremos es sustituir el servicio original por un servicio de uso exclusivo en testing. Con esto, conseguiremos probar únicamente el controlador, aislándolo del servicio, que es la premisa de los tests unitarios: probar sólo una cosa en cada test.
+
+Pasos:
+
+. Crearemos un objeto `mockSolicitudService` que sustituya (_mockee_) al servicio. Inicialmente `mockSolicitudService` estará vacío. Posteriormente le iremos añadiendo los métodos falseados (_mockeados_).
+. Construir un módulo de testing que reemplace el servicio original de la solicitud por el mockeado que hemos creado en el paso anterior.
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { SolicitudController } from './solicitud.controller';
+import { SolicitudService } from './solicitud.service';
+
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+  let mockSolicitudService = {}; <1>
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SolicitudController],
+      providers: [SolicitudService],
+    })
+      .overrideProvider(SolicitudService) <2>
+      .useValue(mockSolicitudService) <3>
+      .compile(); <4>
+
+    controller = module.get<SolicitudController>(SolicitudController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+
+----
+<1> Mock del servicio. Inicialmente vacío para pasar el test
+<2> Servicio que se va a sustituir (mockear)
+<3> Servicio que sustituye (mockea) al original. Usamos el creado en paso 1.
+<4> Construcción del módulo para testing
+
+Lanzaremos ahora los tests unitarios, pero no los lanzaremos todos como hacíamos antes al ejecutar `npm run test`. En este proceso paulatino de creación de los tests unitarios nos ceñiremos sólo a los tests del controlador y además lo haremos en modo `watch`. Así, cada vez que hagamos cambios sobre el código se volverán a ejecutar los tests.
+
+[source, ts]
+----
+$ npm run test:watch
+
+Watch Usage
+ › Press a to run all tests.
+ › Press f to run only failed tests.
+ › Press p to filter by a filename regex pattern. <1>
+ › Press t to filter by a test name regex pattern.
+ › Press q to quit watch mode.
+ › Press Enter to trigger a test run.
+----
+<1> Para ejecutar los tests de los nombres de archivo de acuerdo a una expresión regular
+
+Pulsaremos `p` para indicar que sólo se pasen los tests a los archivos que sigan un patrón concreto de nombre de archivo. Introduciremos `solicitud.co` como patrón. Con esto, se pasarán los tests sólo al controlador de la solicitudes y obtendremos un resultado como el siguiente:
+
+[source, bash]
+----
+ PASS  src/solicitud/solicitud.controller.spec.ts
+  SolicitudController
+    ✓ should be defined (13 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        3.714 s, estimated 4 s
+Ran all test suites matching /solicitud.co/i.
+
+Watch Usage: Press w to show more.
+----
+
+Objetivo cumplido!! Hemos conseguido hacer que desaparezca el error al ejecutar el test del controlador. A continuación, comenzaremos a añadirle tests.
+
+#### Segundo paso. Añadir tests
+
+Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del servicio, vamos a ir creando tests del controlador. Comenzaremos por el de creación de solicitudes añadiendo el test siguiente después del test `should be defined`. Con este nuevo test definimos un nuevo DTO para crear una solicitud y esperamos que nos devuelva un objeto con un `id` (da igual el que sea. En el código de producción sería el `id` que generaría la base de datos) y el resto de campos coincidirán con los del DTO de creación de solicitudes.
+
+Archivo `src/solicitud/solicitud.controller.spec.ts`
+[source, ts]
+----
+...
+  it('should create a solicitud', () => {
+    const createSolicitudDto: CreateSolicitudDto = { <1>
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+
+    expect(controller.create(createSolicitudDto)).toEqual({ <2>
+      id: expect.any(Number),
+      ...createSolicitudDto,
+    });
+  });
+...
+----
+<1> DTO de la solicitud a crear
+<2> Probamos que la solicitud creada consiste en un `id` junto a los datos proporcionados en el DTO para crear la solicitud
+
+Tras guardar los cambios, como estamos en modo `watch` se volverán a pasar los tests y nos da un fallo: el método `create` no existe en el mock del servicio, tal y como se muestra a continuación:
+
+[source, ts]
+----
+ FAIL  src/solicitud/solicitud.controller.spec.ts <1>
+  SolicitudController
+    ✓ should be defined (13 ms)
+    ✕ should create a solicitud (5 ms)
+
+  ● SolicitudController › should create a solicitud
+
+    TypeError: this.solicitudService.create is not a function <2>
+
+      25 |   @Post()
+      26 |   create(@Body() createSolicitudDto: CreateSolicitudDto): Promise<Solicitud> {
+    > 27 |     return this.solicitudService.create(createSolicitudDto); <3>
+         |                                  ^
+      28 |   }
+      29 |
+      30 |   @Get()
+
+      at SolicitudController.create (solicitud/solicitud.controller.ts:27:34)
+      at Object.<anonymous> (solicitud/solicitud.controller.spec.ts:42:23)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed, 2 total
+Snapshots:   0 total
+Time:        3.907 s, estimated 5 s
+Ran all test suites matching /solicitud.co/i.
+
+Watch Usage: Press w to show more.
+----
+<1> El test no pasa
+<2> El método `create` no existe en el mock del servicio (recordamos que estamos en el mockeado)
+<3> Línea en la que se provoca el error en el test
+
+El error se debe a que en la sección anterior creamos el mock del servicio de la solicitud, pero lo creamos vacío, sin ningún método, tal y como se muestra a continuación.
+
+[source, ts]
+----
+...
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+  let mockSolicitudService = {}; <1>
+...
+----
+<1> Mock del servicio creado vacío inicialmente
+
+A continuación crearemos la implementación que mockea al método `create` del servicio. Se limitará a tomar un DTO y devolver un objeto con un `id` aleatorio (simulando lo que haría la base de datos) y el DTO.
+
+Archivo `src/solicitud/solicitud.controller.spec.ts`
+[source, ts]
+----
+...
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+  let mockSolicitudService = {
+    create: jest.fn((dto) => { <1>
+      return {
+        id: Math.random() * (1000 - 1) + 1, <2>
+        ...dto, <3>
+      };
+    }),
+  };
+...
+----
+<1> Método `create` mockeado. 
+<2> id aleatorio
+<3> Incorporar el DTO del objeto a crear
+
+Una vez realizados estos cambios, el test de crear una solicitud pasa correctamente.
+
+[source, bash]
+----
+ PASS  src/solicitud/solicitud.controller.spec.ts
+  SolicitudController
+    ✓ should be defined (13 ms)
+    ✓ should create a solicitud (4 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        3.941 s, estimated 4 s
+Ran all test suites matching /solicitud.co/i.
+
+Watch Usage: Press w to show more.
+----
+
+.Funciones de mock con `jest.fn()`
+****
+Las funciones de mock se usan para inyectar o falsear código durante los tests. 
+`jest.fn()` crea una función de mock y opcionalmente puede tomar una implementación como parámetro. 
+
+Las funciones de mock tienen la propiedad `mock` que permite, entre otros, conocer los argumentos con los que fue llamada, obtener la cantidad de veces que fue llamada, y ver el valor de los argumentos en una llamada concreta, por ejemplo, en la tercera vez que fue llamada.
+
+También tiene métodos interesantes como los siguientes:
+
+* `mockReturnValue()`: Devuelve el valor que se pase como argumento
+* `mockResolvedValue()`: Devuelve el valor resuelto por una promesa
+* `mockImplementation()`: Acepta una función que es usada como implementación del mock
+* ...
+****
+
+A continuación añadiremos otro test. Por ejemplo, añadiremos el test para actualizar una solicitud. Comenzaremos creando el test en `src/solicitud/solicitud.controller.spec.ts`. Lo añadiremos a continuación de los otros tests definidos.
+
+[source, ts]
+----
+...
+  it('should update a solicitud', () => {
+    const updateSolicitudDto: UpdateSolicitudDto = { <1>
+      nombre: 'John Smith', <2>
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+    const solicitudId = 2; <3>
+
+    expect(controller.update(solicitudId, updateSolicitudDto)).toEqual(
+      { 
+        id: solicitudId,
+        ...updateSolicitudDto,
+      },
+    );
+  });
+...
+----
+<1> DTO con los cambios de la solicitud
+<2> Nombre modificado
+<3> `id` de la solicitud a modificar
+<4> Se espera que resultado de actualizar la solicitud sea la solicitud  con el `id` y los datos actualizados.
+
+Tras guardar los cambios se volverán a pasar los tests y no pasará este test porque no está definido el método `update` en el mock del servicio.
+
+[source, bash]
+----
+ FAIL  src/solicitud/solicitud.controller.spec.ts <1>
+  SolicitudController
+    ✓ should be defined (14 ms)
+    ✓ should create a solicitud (4 ms)
+    ✕ should update a solicitud (3 ms)
+
+  ● SolicitudController › should update a solicitud
+
+    TypeError: this.solicitudService.update is not a function <2>
+
+      43 |     @Body() updateSolicitudDto: UpdateSolicitudDto,
+      44 |   ): Promise<Solicitud> {
+    > 45 |     return this.solicitudService.update(+id, updateSolicitudDto); <3>
+         |                                  ^
+      46 |   }
+      47 |
+      48 |   @Delete(':id')
+
+      at SolicitudController.update (solicitud/solicitud.controller.ts:45:34)
+      at Object.<anonymous> (solicitud/solicitud.controller.spec.ts:74:23)
+----
+1. El test no pasa
+2. El método `update` no existe en el mock del servicio (recordamos que estamos en el mockeado)
+3. Línea en la que se provoca el error en el test
+
+Para solucionar este problema añadiremos la función `update` a `mockSolicitudService`. Con los cambios, quedará así
+
+[source, ts]
+----
+...
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+  let mockSolicitudService = {
+    create: jest.fn((dto) => {
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    update: jest.fn((id, dto) => { <1>
+      return {
+        id: id,
+        ...dto,
+      };
+    }),
+  };
+...
+----
+<1> `update` devolverá el nuevo objeto modificado
+
+Tras los cambios, los tests volverán a pasar.
+
+[source, bash]
+----
+ PASS  src/solicitud/solicitud.controller.spec.ts
+  SolicitudController
+    ✓ should be defined (19 ms)
+    ✓ should create a solicitud (6 ms)
+    ✓ should update a solicitud (3 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        4.209 s
+Ran all test suites related to changed files.
+
+Watch Usage: Press w to show more.
+----
+
+Por último, es posible introducir una mejora al test para comprobar que el servicio fue llamado con los argumentos correctos. Esta comprobación va dirigida a conocer si el controlador introduce alguna anomalía al llamar al servicio. Con esto, no sólo nos aseguramos que el controlador hace su trabajo y devuelve los datos correctos, sino que también comprobamos que internamente hace bien su trabajo.
+
+Tras los cambios el test quedaría así:
+
+[source, ts]
+----
+...
+  it('should update a solicitud', () => {
+    const updateSolicitudDto: UpdateSolicitudDto = {
+      nombre: 'John Smith',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+    const solicitudId = 1;
+
+    expect(controller.update(solicitudId, updateSolicitudDto)).toEqual({
+      id: solicitudId,
+      ...updateSolicitudDto,
+    });
+
+    expect(mockSolicitudService.update).toHaveBeenCalledWith( <1>
+      solicitudId,
+      updateSolicitudDto,
+    );
+  });
+...
+----
+<1> Comprobación de que el servicio ha sido llamado con los argumentos correctos por parte del controlador
+
+Al guardar, se volverán a pasar los tests y el cambio introducido funcionará correctamente, lo que permitirá validar que el controlador hace bien su trabajo.
+
+Ahora, y de acuerdo con el informe de cobertura de tests, se trataría de ir añadiendo los tests que faltan (mostrar solicitudes, mostrar una solicitud y eliminar una solicitud). Los dejaremos para más adelante y ahora pasaremos a ver cómo llevar el mock del servicio a una clase aparte para no tenerlo mezclado con el test del controlador.
+
+#### Tercer paso. Llevar el mock del servicio a una clase
+
+Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de `mockSolicitudService` a métodos en una clase nueva.
+
+Partimos del servicio mockeado en la propia clase, que recordamos que tenía esta forma:
+
+[source, typescript]
+----
+...
+  let mockSolicitudService = {
+    create: jest.fn((dto) => { <1>
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    update: jest.fn((id, dto) => { <2>
+      return {
+        id: id,
+        ...dto,
+      };
+    }),
+  };
+...
+----
+<1> Función de mock para crear solicitudes
+<2> Función de mock para modificar solicitudes
+
+Comenzamos generando la clase que actuará como mock del servicio con el CLI de NestJS. La situaremos en la misma carpeta que el resto de componentes de la solicitud.
+
+[source, bash]
+----
+$ nest g class solicitud/SolicitudServiceMock --no-spec <1>
+----
+<1> Incluimos el parámetro `--no-spec` para que no cree el archivo de testing
+
+Esta clase estará inicialmente vacía:
+
+[source, ts]
+----
+export class SolicitudServiceMock {}
+----
+
+Ahora se trata de traer a esta nueva clase de mock el código que había en los métodos `create` y `update` del objeto `mockSolicitudService` en el archivo de testing del controlador. Para ello, crearemos en la clase dos métodos `create` y `update` en los que incluiremos el código de mocking que ya teníamos. No obstante, renombraremos los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el servicio real.
+
+La clase que mockea al servicio ahora quedará así:
+
+[source, ts]
+----
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { Solicitud } from './entities/solicitud.entity';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+export class SolicitudServiceMock {
+  async create(createSolicitudDto: CreateSolicitudDto): Promise<Solicitud> { <1>
+    return Promise.resolve({ <2>
+      id: Math.random() * (1000 - 1) + 1,
+      ...createSolicitudDto,
+    });
+  }
+
+  async update(
+    id: number,
+    updateSolicitudDto: UpdateSolicitudDto,
+  ): Promise<Solicitud> { <3>
+    return Promise.resolve({ <4>
+      id: id,
+      ...updateSolicitudDto,
+    }) as Promise<Solicitud>; <5>
+  }
+}
+
+----
+<1> Método `create` mockeado
+<2> Código traído desde `mockSolicitudService`
+<3> Método `update` mockeado
+<4> Código traído desde `mockSolicitudService`
+<5> Forzamos el casting de la respuesta porque no pueden inferir que el tipo que devolvemos es correcto.
+
+Una vez que disponemos de la clase que mockea el servicio, **haremos los cambios en el archivo de tests del controlador para que use esta clase mockeada en lugar de la variable `mockSolicitudService`**, que es la que contenía la implementación de los mocks. 
+
+[NOTE]
+====
+La inyección de dependencias de NestJS permite que podamos sustituir el servicio que se usa para ejecutar los tests. El uso de mocks permite probar sólo una parte del código haciendo que el resto ofrezca valores falseados/generados. Esto, además de permitirnos un mayor control en el proceso de testing, acelera la ejecución de los tests, ya que el servicio ya no tiene que usar la base de datos (que siempre ofrece mayor latencia) para realizar su trabajo en el testing del controlador.
+====
+
+Hay que hacer varios cambios:
+
+. Declarar una variable `service` de tipo `SolicitudService`
+. Definir un `SolicitudServiceProvider` que mockee el provider `SolicitudService`
+. Incorporar el `SolicitudServiceProvider` a la lista de providers del módulo de testing
+. Usar la clase de mock para construir el módulo de testing
+. Inicializar la variable `service` al servicio de la solicitud. Como `SolicitudService` está mockeado realmente no usará la implementación original
+. Cambiar los tests a asíncronos
+. Añadir `await` a las llamadas a los métodos del controlador
+. Usar espías de métodos si usamos métodos como `toHaveBeenCalledWith`
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { SolicitudController } from './solicitud.controller';
+import { SolicitudService } from './solicitud.service';
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+import { of } from 'rxjs';
+import { SolicitudServiceMock } from './solicitud-service-mock';
+
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+  let service: SolicitudService; <1>
+
+  beforeEach(async () => {
+    const SolicitudServiceProvider = { <2>
+      provide: SolicitudService,
+      useClass: SolicitudServiceMock,
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SolicitudController],
+      providers: [SolicitudService, SolicitudServiceProvider], <3>
+    })
+      .overrideProvider(SolicitudService)
+      .useClass(SolicitudServiceMock) <4>
+      .compile();
+
+    controller = module.get<SolicitudController>(SolicitudController);
+    service = module.get<SolicitudService>(SolicitudService); <5>
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  it('should create a solicitud', async () => { <6>
+    const createSolicitudDto: CreateSolicitudDto = {
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+
+    expect(await controller.create(createSolicitudDto)).toEqual({ <7>
+      id: expect.any(Number),
+      ...createSolicitudDto,
+    });
+  });
+
+  it('should update a solicitud', async () => { <8>
+    const updateSolicitudDto: UpdateSolicitudDto = {
+      nombre: 'John Smith',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+    const solicitudId = 1;
+
+    expect(await controller.update(solicitudId, updateSolicitudDto)).toEqual({ <9>
+      id: solicitudId,
+      ...updateSolicitudDto,
+    });
+
+    const updateSpy = jest.spyOn(service, 'update'); <10>
+    controller.update(solicitudId, updateSolicitudDto); <11>
+
+    expect(updateSpy).toHaveBeenCalledWith(solicitudId, updateSolicitudDto); <12>
+  });
+});
+----
+<1> Declaración del servicio
+<2> `SolicitudServiceProvider` mockea el provider `SolicitudService`
+<3> Se añade `SolicitudServiceProvider` como otro provider
+<4> Inicialización del mock a la clase del mock del servicio (Inyección de dependencias)
+<5> Inicialización del servicio al servicio de la solicitud, que está mockeado
+<6> Caso de prueba asíncrono por el `await` en métodos dentrol del caso de prueba
+<7> Probamos que la solicitud se crea correctamente y devuelve los valores esperados. La ejecución se hace con `await`
+<8> Caso de prueba asíncrono por el `await` en métodos dentro del caso de prueba
+<9> Probamos que la actualización de una solicitud se realiza correctamente y devuelve los valores esperados. La ejecución se hace con `await`
+<10> Crear un espía para el método `update` en `service`
+<11> Hacer una actualización de solicitud
+<12> Probamos que el servicio espiado ha sido llamado por el controlador con los parámetros adecuados
+
+.`jest.spyOn()`
+****
+`jest.spyOn()` crea una función de mock similar a `jest.fn()` pero además, monitoriza/fisgonea las llamadas al método que se le proporcione.
+
+`jest.spyOn(objeto, nombre-de-método-a-espiar)` devuelve una función que se comporta como espía monitorizando las llamadas que se realicen al método del objeto que se pasen como argumentos. 
+
+[source, ts]
+----
+...
+let service: SolicitudService; <1>
+...
+service = module.get<SolicitudService>(SolicitudService); <2>
+...
+
+const updateSpy = jest.spyOn(service, 'update'); <3>
+controller.update(solicitudId, updateSolicitudDto); <4>
+
+expect(updateSpy).toHaveBeenCalledWith(solicitudId, updateSolicitudDto); <5>
+...
+----
+<1> Declaración de un objeto `service`
+<2> Inicialización del objeto `service` (a la clase del servicio)
+<3> Espiar el método `update` del objeto `service`. Ahora, `updateSpy` 
+monitoriza cada una de las llamadas que se hagan al método `update` del objeto `service`.
+<4> Llamar al método espiado (`update`)
+<5> Comprobar a través del espía (`updateSpy`) los argumentos con los que ha sido llamada la función espiada.
+
+La función espía intercepta/espía las llamadas que se hacen a un método de un objeto. Haciendo la analogía, el método `update` del objeto `service` está _pinchado_, como se _pinchan_ los teléfonos en espionaje.
+****
+
+### Tests del servicio
+
+Una vez creados los tests del controlador procederemos a realizar los tests del servicio. De forma análoga a como hicimos con el controlador, que mockeaba el servicio del que dependía, en los tests del servicio también mockearamos sus dependencias. En el caso del servicio se mockea el repositorio, que es su dependencia.
+
+Comenzamos lanzando los tests en modo `watch`, pero limitados al patrón `solicitud.service` 
+
+[source, bash]
+----
+$ npm run test:watch
+----
+
+El resultado de los tests nos devolverá que no se pueden resolver las dependencias de `SolicitudService`. Esto se debe a que `SolicitudService` tiene una dependencia con el repositorio `SolicitudRepository` y no se puede resolver en el entorno de pruebas. 
+
+Recordemos la definición del servicio en `solicitud/solicitud.service.ts`
+[source, ts]
+----
+...
+@Injectable()
+export class SolicitudService {
+  constructor(
+    @InjectRepository(Solicitud)
+    private solicitudRepository: Repository<Solicitud>, <1>
+  ) {}
+...
+----
+<1> Dependencia del servicio respecto del repositorio
+
+De foma análoga a los tests del controlador, en el código siguiente del test del servicio, generado por el CLI de NestJS al generar el servicio, vemos que dentro de `beforeEach` se usa la clase `Test` y un método `createTestingModule`. Este método toma los mismos argumentos que se usan para crear un módulo (p.e. `imports`, `providers`, `controllers`, …​). Tras definir el nuevo módulo (el de testing) y llamar al método `compile` se crea el módulo con sus dependencias similar a los módulos creados para el entorno de ejecución.
+
+
+Archivo `src/solicitud/solicitud.service.spec.ts`
+[source, ts]
+----
+...
+describe('SolicitudService', () => {
+  let service: SolicitudService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({ <1>
+      providers: [SolicitudService], <2>
+    }).compile();
+
+    service = module.get<SolicitudService>(SolicitudService); <3>
+  });
+...
+----
+<1> Definición del módulo para el testing del servicio
+<2> Provider del servicio 
+<3>	Creación de una instancia del servicio
+
+#### Primer paso. Evitar que falle el test
+
+Al igual que hicimos con el controlador, seguiremos un enfoque progresivo para conseguir que nuestros tests funcionen. Se trata de ayudar a que en primer lugar desaparezcan los errores de las pruebas del servicio. Posteriormente, se irán refinando los tests.
+
+Inicialmente, el test del servicio falla porque el servicio no es capaz de resolver sus dependencias. Lo que haremos es sustituir el repositorio original por un repositorio de uso exclusivo en testing. Con esto, conseguiremos probar únicamente el servicio, aislándolo del repositorio, que es la premisa de los tests unitarios: probar sólo una cosa en cada test.
+
+Pasos:
+
+. Crearemos un objeto `mockSolicitudRepository` que sustituya (mockee) al repositorio. Inicialmente `mockSolicitudRepository` estará vacío. Posteriormente le iremos añadiendo los métodos falseados (mockeados).
+. Construir un módulo de testing que reemplace el repositorio original de solicitudes por el mockeado que hemos creado en el paso anterior.
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { SolicitudService } from './solicitud.service';
+import { Solicitud } from './entities/solicitud.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
+
+describe('SolicitudService', () => {
+  let service: SolicitudService;
+  let mockSolicitudRepository = {}; <1>
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SolicitudService,
+        { <2>
+          provide: getRepositoryToken(Solicitud), <3>
+          useValue: mockSolicitudRepository, <4>
+        },
+      ],
+    }).compile(); <5>
+
+    service = module.get<SolicitudService>(SolicitudService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+
+----
+<1> Mock del repositorio. Inicialmente vacío para pasar el test
+<2> Nuevo provider
+<3> Repositorio que se va a sustituir (mockear)
+<4> Repositorio que sustituye (mockea) al original. Usamos el creado en el paso 1
+<5> Construcción del módulo para testing
+
+Tras guardar los cambios ahora vemos que ya pasan los tests.
+
+[source, bash]
+----
+ PASS  src/solicitud/solicitud.service.spec.ts
+  SolicitudService
+    ✓ should be defined (13 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        4.758 s, estimated 6 s
+Ran all test suites matching /solicitud.service/i.
+
+Watch Usage: Press w to show more.
+----
+
+#### Segundo paso. Añadir tests
+
+Una vez que hemos configurado el módulo para que el test no falle mediante el mockeo del repositorio, vamos a ir creando tests del servicio. Comenzaremos por el de creación de solicitudes añadiendo este test después del test `should be defined`. Con este nuevo test definimos un nuevo DTO para crear una solicitud y esperamos que nos devuelva un objeto con un id (da igual el que sea. En el código de producción sería el `id` que generaría la base de datos) y el resto de campos coincidirán con los del DTO de creación de solicitud.
+
+[source, ts]
+----
+...
+  it('should create a solicitud', async () => {
+    const createSolicitudDto: CreateSolicitudDto = { <1>
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+
+    expect(await service.create(createSolicitudDto)).toEqual({ <2>
+      id: expect.any(Number),
+      ...createSolicitudDto,
+    });
+  });
+...
+----
+<1> DTO de la solicitud a crear
+<2> Probamos que la solicitud creada consiste en un `id` junto a los datos proporcionados en el DTO para crear la solicitud
+
+Tras guardar los cambios, como estamos en modo `watch` se volverán a pasar los tests y nos da un fallo: el método `create` no existe en el mock del repositorio, tal y como se muestra a continuación:
+
+[source, bash]
+----
+ FAIL  src/solicitud/solicitud.service.spec.ts
+  SolicitudService
+    ✓ should be defined (12 ms)
+    ✕ should create a solicitud (3 ms)
+
+  ● SolicitudService › should create a solicitud
+
+    TypeError: this.solicitudRepository.save is not a function
+
+      13 |   ) {}
+      14 |   async create(createSolicitudDto: CreateSolicitudDto): Promise<Solicitud> {
+    > 15 |     return await this.solicitudRepository.save(createSolicitudDto);
+         |                                           ^
+      16 |   }
+      17 |
+      18 |   async findAll(): Promise<Solicitud[]> {
+
+      at SolicitudService.create (solicitud/solicitud.service.ts:15:43)
+      at Object.<anonymous> (solicitud/solicitud.service.spec.ts:45:26)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed, 2 total
+Snapshots:   0 total
+Time:        3.966 s, estimated 5 s
+Ran all test suites matching /solicitud.service/i.
+
+Watch Usage: Press w to show more.
+----
+<1> El test no pasa
+<2> El método `save` no existe en el mock del repositorio (recordamos que estamos en el mockeado)
+<3> Línea en la que se provoca el error en el test
+
+El error se debe a que en la sección anterior creamos el mock del repositorio de la solicitud pero lo creamos vacío, sin ningún método, tal y como se recuerda a continuación.
+
+[source, ts]
+----
+...
+describe('SolicitudService', () => {
+  let service: SolicitudService;
+  let mockSolicitudRepository = {}; <1>
+...
+----
+<1> Mock del repositorio creado vacío inicialmente
+
+A continuación crearemos la implementación que mockea al método `save` del repositorio. Se limitará a tomar un DTO y devolver un objeto con un `id` aleatorio  (simulando lo que haría la base de datos) y el DTO.
+
+Archivo `src/solicitud/solicitud.service.spec.ts`
+
+[source, ts]
+----
+...
+describe('SolicitudService', () => {
+  let service: SolicitudService;
+  let mockSolicitudRepository = {
+    save: jest.fn().mockImplementation((dto) => { <1>
+      return {
+        id: Math.random() * (1000 - 1) + 1, <2>
+        ...dto, <3>
+      };
+    }),
+  };
+...
+----
+<1> Método `save` mockeado.
+<2> `id` aleatorio
+<3> Incorporar el DTO del objeto a crear
+
+Una vez realizados estos cambios, el test de crear una solicitud pasa correctamente.
+
+[source, bash]
+----
+ PASS  src/solicitud/solicitud.service.spec.ts
+  SolicitudService
+    ✓ should be defined (12 ms)
+    ✓ should create a solicitud (4 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        3.673 s
+Ran all test suites matching /solicitud.service/i.
+
+Watch Usage: Press w to show more.
+----
+
+A continuación añadiremos otro test. Por ejemplo, añadiremos el test para actualizar una solicitud. Comenzaremos creando el test en `src/solicitud/solicitud.service.spec.ts`. Lo añadiremos a continuación de los otros tests definidos.
+
+[source, ts]
+----
+  it('should update a solicitud', async () => {
+    const updateSolicitudDto: UpdateSolicitudDto = { <1>
+      nombre: 'John Smith', <2>
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+    const solicitudId = 1; <3>
+
+    expect(await service.update(solicitudId, updateSolicitudDto)).toEqual({ <4>
+      id: solicitudId,
+      ...updateSolicitudDto,
+    });
+  });
+----
+<1> DTO con los cambios de la solicitud
+<2> Cambio introducido
+<3> `id`  de la solicitud  a modificar
+<4> Se espera que resultado de actualizar la solicitud sea la solicitud con el `id` y los datos actualizados
+
+Tras guardar los cambios se volverán a pasar los tests y no pasará este test porque no está definido el método `findOne` en el mock del repositorio.
+
+[source, bash]
+----
+ FAIL  src/solicitud/solicitud.service.spec.ts
+  SolicitudService
+    ✓ should be defined (13 ms)
+    ✓ should create a solicitud (4 ms)
+    ✕ should update a solicitud (3 ms)
+
+  ● SolicitudService › should update a solicitud
+
+    TypeError: this.solicitudRepository.findOne is not a function <1>
+
+      28 |     updateSolicitudDto: UpdateSolicitudDto,
+      29 |   ): Promise<Solicitud> {
+    > 30 |     let toUpdate = await this.solicitudRepository.findOne(id);
+         |                                                   ^
+      31 |
+      32 |     let updated = Object.assign(toUpdate, updateSolicitudDto);
+      33 |
+----
+
+Para solucionar este problema añadiremos la función `findOne` a `solicitudRepository` que devuelva un objeto `Solicitud` completo. Con los cambios, quedará así:
+
+Archivo `solicitud/solicitud.service.spec.ts`:
+[source, ts]
+----
+...
+  let mockSolicitudRepository = {
+    save: jest.fn().mockImplementation((dto) => {
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    findOne: jest.fn().mockImplementation((id) => { <1>
+      return {
+        id: id, <2>
+        nombre: 'John Doe',
+        cargo: 'Assistant Professor',
+        unidad: 'Informatics Department',
+        telefono: '1234',
+        email: 'john.doe@gmail.com',
+        tipo: '',
+        nombreActividad: '',
+        start: undefined,
+        end: undefined,
+        dia: '',
+        horaInicio: '',
+        horaFin: '',
+      };
+    }),
+  };
+----
+<1> `findOne` devolverá un objeto `Solicitud` completo como lo devolvería la base de datos
+<2> Simulamos que devolvemos el mismo `id` con el que hacemos la consulta
+
+Tras los cambios, los tests volverán a pasar.
+
+[source, code]
+----
+ PASS  src/solicitud/solicitud.service.spec.ts
+  SolicitudService
+    ✓ should be defined (13 ms)
+    ✓ should create a solicitud (4 ms)
+    ✓ should update a solicitud (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        4.159 s
+Ran all test suites matching /solicitud.service/i.
+----
+
+Ahora, y de acuerdo con el informe de cobertura de tests, se trataría de ir añadiendo los tests que faltan (mostrar solicitudes, mostrar una solicitud y eliminar una solicitud). Los dejaremos para más adelante y ahora pasaremos a ver cómo llevar el mock del repositorios a una clase aparte para no tenerlo mezclado con el test del servicio.
+
+#### Tercer paso. Llevar el mock del repositorio a una clase
+
+Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de `mockSolicitudRepository` a métodos en una clase nueva.
+
+Partimos del repositorio mockeado en la propia clase y tenía esta forma:
+
+[source, ts]
+----
+...
+ let mockSolicitudRepository = {
+    save: jest.fn().mockImplementation((dto) => { <1>
+      return {
+        id: Math.random() * (1000 - 1) + 1,
+        ...dto,
+      };
+    }),
+    findOne: jest.fn().mockImplementation((id) => { <2>
+      return {
+        id: id,
+        nombre: 'John Doe',
+        cargo: 'Assistant Professor',
+        unidad: 'Informatics Department',
+        telefono: '1234',
+        email: 'john.doe@gmail.com',
+        tipo: '',
+        nombreActividad: '',
+        start: undefined,
+        end: undefined,
+        dia: '',
+        horaInicio: '',
+        horaFin: '',
+      };
+    }),
+  };
+...
+----
+<1> Método para guardar solicitudes
+<2> Método para buscar una solicitud
+
+Comenzamos generando la clase con el CLI de NestJS
+
+[source, ts]
+----
+$ nest g class solicitud/SolicitudRepositoryMock --no-spec <1>
+----
+<1> Incluimos el parámetro --no-spec para que no cree el archivo de testing
+
+Esta clase estará inicialmente vacía:
+
+[source,ts]
+----
+$ export class SolicitudRepositoryMock {}
+----
+
+Ahora se trata de traer a esta nueva clase de mock el código que había en los métodos `save` y `findOne` del objeto `SolicitudServiceMock` en el archivo de testing del servicio. Para ello, crearemos en la clase dos métodos `save` y `findOne` en los que incluiremos el código de mocking que ya teníamos. No obstante, renombraremos los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el repositorio real.
+
+La clase que mockea al repositorio ahora quedará así:
+
+[source, typescript]
+----
+import { Solicitud } from './entities/solicitud.entity';
+export class SolicitudRepositoryMock {
+  save(solicitud: Solicitud): Promise<Solicitud> { <1>
+    return Promise.resolve({
+      id: Math.random() * (1000 - 1) + 1, <2>
+      ...solicitud,
+    });
+  }
+
+  findOne(id: number): Promise<Solicitud> { <3>
+    return Promise.resolve({ <4>
+      id: id,
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    });
+  }
+}
+----
+<1> Método `save` mockeado
+<2> Código traído desde `mockSolicitudRepository` pero envuelto en una promesa
+<3> Método `findOne` mockeado
+<4> Código traído desde `mockSolicitudRepository` pero envuelto en una promesa
+
+Una vez que disponemos de la clase que mockea el repositorio, **haremos los cambios en el archivo de tests del servicio para que use esta clase mockeada en lugar de la variable `mockSolicitudRepository`**, que es la que contenía la implementación de los mocks. Basta con:
+
+. Eliminar la variable `mockSolicitudRepository`
+. Usar la clase de mock para construir el módulo de testing
+ 
+La clase de testing quedaría así
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { SolicitudService } from './solicitud.service';
+import { Solicitud } from './entities/solicitud.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+import { SolicitudRepositoryMock } from './solicitud-repository-mock';
+
+describe('SolicitudService', () => {
+  let service: SolicitudService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SolicitudService,
+        {
+          provide: getRepositoryToken(Solicitud),
+          useClass: SolicitudRepositoryMock, <1>
+        },
+      ],
+    }).compile();
+
+    service = module.get<SolicitudService>(SolicitudService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  it('should create a solicitud', async () => {
+    const createSolicitudDto: CreateSolicitudDto = {
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+
+    expect(await service.create(createSolicitudDto)).toEqual({
+      id: expect.any(Number),
+      ...createSolicitudDto,
+    });
+  });
+
+  it('should update a solicitud', async () => {
+    const updateSolicitudDto: UpdateSolicitudDto = {
+      nombre: 'John Smith',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+    const solicitudId = 1;
+
+    expect(await service.update(solicitudId, updateSolicitudDto)).toEqual({
+      id: solicitudId,
+      ...updateSolicitudDto,
+    });
+  });
+});
+----
+<1> Inicialización del mock a la clase del mock del repositorio
+
+[NOTE]
+====
+La inyección de dependencias de NestJS permite que podamos sustituir el repositorio que se usa para ejecutar los tests. El uso de mocks permite probar sólo una parte del código haciendo que el resto ofrezca valores falseados/generados. Esto, además de permitirnos un mayor control en el proceso de testing, acelera la ejecución de los tests, ya que el servicio ya no tiene que usar la base de datos (que siempre ofrece mayor latencia) para realizar su trabajo.
+====
+
+### Tests end to end
+
+Este tipo de tests se centra más en la interacción entre clases y módulos a un nivel más alto, en la línea de cómo interactuarían los usuarios con la aplicación. Con esto podremos realizar la prueba de cada endpoint de la API. Para simular las llamadas HTTP NestJS usa https://github.com/visionmedia/supertest[Supertest] .
+
+[TIP]
+====
+Para el desarrollo de nuestros tests seguiremos apoyándonos en que NestJS permite la inyección de dependencias de forma que podremos mockear o sustituir componentes fácilmente en el entorno de pruebas.
+====
+
+#### Añadir script para tests e2e en modo `watch` 
+
+Podemos lanzar las pruebas e2e generadas al crear el proyecto con el CLI de NestJS. En `package.json` hay un script para ello: `test:e2e`. Pero antes de lanzar los tests vamos a introducir un script en `package.json` para que los tests e2e también se ejecuten en modo `watch`. Añadiremos los cambios al final del elemento `scripts`:
+
+Archivo `package.json`
+
+[source, json]
+----
+...
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch" <1>
+  },
+...
+----
+<1> Nueva etiqueta `test:e2e:watch` para tests e2e en modo `watch`.
+
+#### Primer paso. Evitar que falle el test
+
+Comenzaremos haciendo una copia de `test/app.e2e-spec.ts`. La nueva copia se denominará `test/solicitud.e2e-spec.ts`. Responderemos que Sí a que se actualicen todas las importaciones en el archivo copiado.
+
+[NOTE]
+====
+De forma predeterminada se ejecutarán como tests e2e todos los que incluyan `e2e-spec.ts` en su nombre de archivo. Esto se configura en el archivo `test/jest-e2e.json` y queda configurado automáticamente al crear el proyecto con el CLI de NestJS.
+====
+
+Si ejecutamos los tests e2e con el script `test:e2e:watch`
+
+[source, bash]
+----
+$ npm run test:e2e:watch
+----
+
+indicando como patrón `solicitud.e2e` todo funcionará correctamente por ahora ya que es una copia exacta de `app.e2e-spec.ts`
+
+[source, bash]
+----
+ PASS  test/solicitud.e2e-spec.ts
+  AppController (e2e) 
+    ✓ / (GET) (295 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        4.954 s
+Ran all test suites matching /solicitud.e2e/i.
+----
+
+Sin embargo, una vez que comencemos a personalizar el archivo de testing para que funcione con el módulo de solicitudes en lugar del módulo de la aplicación empezarán los problemas.
+
+Comencemos introduciendo los cambios siguientes en `test/solicitud.e2e-spec.ts:
+
+. Cambiar la descripción de `describe` para que sea para solicitudes
+. Sustituir el módulo
+
+[source, ts]
+----
+...
+describe('SolicitudController (e2e)', () => { <1>
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [SolicitudModule], <2>
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+...
+----
+<1> Modificación de la descripción del bloque de tests
+<2> Uso del módulo de solicitudes
+
+[source, bash]
+----
+ FAIL  test/solicitud.e2e-spec.ts
+  SolicitudController (e2e)
+    ✕ / (GET) (14 ms)
+
+  ● SolicitudController (e2e) › / (GET)
+
+    Nest can't resolve dependencies of the SolicitudRepository (?). Please make sure that the argument Connection at index [0] is available in the TypeOrmModule context.
+----
+
+El error indica que el módulo de testing creado para la ocasión no es capaz de resolver las dependencias que hay sobre el repositorio de `SolicitudRepository`. De forma análoga a como hemos hecho con los tests del controlador y del servicio, hay que añadir un mock que permita resolver la dependencia existente. Lo más inmediato es hacer lo mínimo para que el test deje de ejecutarse con errores. A continuación se muestran los cambios realizados.
+
+Archivo `test/solicitud.e2e-spec.ts`
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { SolicitudModule } from '../src/solicitud/solicitud.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Solicitud } from '../src/solicitud/entities/solicitud.entity';
+
+describe('SolicitudController (e2e)', () => {
+  let app: INestApplication;
+  const mockSolicitudRepository = { <1>
+    find: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [SolicitudModule], <2>
+    })
+      .overrideProvider(getRepositoryToken(Solicitud)) <3>
+      .useValue(mockSolicitudRepository) <4>
+      .compile(); <5>
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/solicitud (GET)', async () => { <6>
+    return request(app.getHttpServer()).get('/solicitud').expect(200);
+  });
+});
+
+----
+<1> Mock del repositorio. Inicialmente sólo con una función de mock `find` vacía para pasar el test
+<2> **Módulo de solicitud**. No olvidar cambiarlo. Al haber copiado el archivo de tests desde `app.e2e-spec.ts`, el valor viene a `AppModule`
+<3> Repositorio que se va a sustituir (mockear)
+<4> Repositorio que sustituye (mockea) al original. Usamos el creado en paso 1.
+<5> Construcción del módulo para testing
+<6> Test a ejecutar. Comprueba que en la ruta raiz del controlador (`/solicitud`) se devuelve un código de estado HTTP de 200
+
+Tras guardar los cambios vemos que aparece un nuevo error, esta vez relacionado con la autenticación. El error se debe a que los endpoints de los controladores incluyen guardas para proteger el acceso a través de JWT. Para los tests, burlaremos la guarda definida (`AuthGuuard('jwt')`). El archivo de testing ahora quedaría así:
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { SolicitudModule } from '../src/solicitud/solicitud.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Solicitud } from '../src/solicitud/entities/solicitud.entity';
+import { AuthGuard } from '@nestjs/passport';
+
+describe('SolicitudController (e2e)', () => {
+  let app: INestApplication;
+  const mockSolicitudRepository = {
+    find: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [SolicitudModule],
+    })
+      .overrideGuard(AuthGuard('jwt')) <1>
+      .useValue('') <2>
+      .overrideProvider(getRepositoryToken(Solicitud))
+      .useValue(mockSolicitudRepository)
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/solicitud (GET)', async () => {
+    return request(app.getHttpServer()).get('/solicitud').expect(200);
+  });
+});
+----
+<1> Guarda que se va a modificar
+<2> Sustituir la guarda por nada para saltarla
+
+Tras guardar los cambios veremos que pasan los tests.
+
+[source, bash]
+----
+ PASS  test/solicitud.e2e-spec.ts
+  SolicitudController (e2e)
+    ✓ /solicitud (GET) (184 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        4.512 s
+Ran all test suites matching /solicitud.e2e/i.
+
+Watch Usage: Press w to show more.
+----
+
+Este test se limita a comprobar que en la ruta `/solicitud` se devuelve un código de estado HTTP de 200.
+
 ## Caso de uso. Catálogo de productos
 
-Para ilustrar los tests unitarios y de integración en este tutorial, así como el testing de controladores, servicios y uso de mocks, vamos a desarrollar un caso de uso sobre un API para un catálogo ficticio de productos. La API ofrecerá los endpoints para las operaciones básicas de crear un producto, obtener el listado de productos, obtener un producto a partir de su id, modificar y eliminar un producto.
+Para ilustrar los tests unitarios y de integración en este tutorial, así como el testing de controladores, servicios y uso de mocks, vamos a desarrollar un caso de uso sobre una API para un catálogo ficticio de productos. La API ofrecerá los endpoints para las operaciones básicas de crear un producto, obtener el listado de productos, obtener un producto a partir de su id, modificar y eliminar un producto.
 
 Para no complicar demasiado el ejemplo pero que también dé juego, de cada producto se guarda:
 
@@ -1336,18 +2854,18 @@ Tras los cambios el test quedaría así:
 
 Al guardar, se volverán a pasar los tests y el cambio introducido funcionará correctamente, lo que permitirá validar que el controlador hace bien su trabajo.
 
-Ahora, y de acuerdo con el informe de cobertura de tests, se trataría de ir añadiendo los tests que faltan (mostrar productos, mostrar un producto y eliminar un producto). Para no extender el tutorial, se dejan fuera del tutorial.
+Ahora, y de acuerdo con el informe de cobertura de tests, se trataría de ir añadiendo los tests que faltan (mostrar solciitudes, mostrar una solicitud y eliminar una solicitud). Los dejaremos para más adelante y ahora pasaremos a ver cómo llevar el mock del servicio a una clase aparte para no tenerlo mezclado con el test del controlador.
 
 #### Tercer paso. Llevar el mock del servicio a una clase
 
-Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de `mockProductService` a métodos en una clase nueva.
+Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de `mockSolicitudService` a métodos en una clase nueva.
 
 Partimos del servicio mockeado en la propia clase, que recordamos que tenía esta forma:
 
 [source, typescript]
 ----
 ...
-  let mockProductService = {
+  let mockSolicitudService = {
     create: jest.fn((dto) => { <1>
       return {
         id: Math.random() * (1000 - 1) + 1,
@@ -1363,14 +2881,14 @@ Partimos del servicio mockeado en la propia clase, que recordamos que tenía est
   };
 ...
 ----
-<1> Función de mock para crear productos
-<2> Función de mock para modificar productos
+<1> Función de mock para crear solicitudes
+<2> Función de mock para modificar solicitudes
 
 Comenzamos generando la clase que actuará como mock del servicio con el CLI de NestJS. La situaremos en la misma carpeta que el resto de componentes del producto.
 
 [source, bash]
 ----
-$ nest g class product/ProductServiceMock --no-spec <1>
+$ nest g class solicitud/SolicitudServiceMock --no-spec <1>
 ----
 <1> Incluimos el parámetro `--no-spec` para que no cree el archivo de testing
 
@@ -1378,43 +2896,45 @@ Esta clase estará inicialmente vacía:
 
 [source, ts]
 ----
-export class ProductServiceMock {}
+export class SolicitudServiceMock {}
 ----
 
-Ahora se trata de traer a esta nueva clase de mock el código que había en los métodos `create` y `update` del objeto `mockProductService` en el archivo de testing del controlador. Para ello, crearemos en la clase dos métodos `create` y `update` en los que incluiremos el código de mocking que ya teníamos. No obstante, renombraremos los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el servicio real.
+Ahora se trata de traer a esta nueva clase de mock el código que había en los métodos `create` y `update` del objeto `mockSolicitudService` en el archivo de testing del controlador. Para ello, crearemos en la clase dos métodos `create` y `update` en los que incluiremos el código de mocking que ya teníamos. No obstante, renombraremos los DTO para darle una mayor semántica. Además, haremos que los métodos devuelvan promesas, tal y como lo hacen en el servicio real.
 
 La clase que mockea al servicio ahora quedará así:
 
 [source, ts]
 ----
-import { Product } from './entities/product.entity';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-export class ProductServiceMock {
-  async create(createProductDto: CreateProductDto): Promise<Product> { <1>
-    return Promise.resolve({
-      id: Math.random() * (1000 - 1) + 1, <2>
-      ...createProductDto,
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { Solicitud } from './entities/solicitud.entity';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+export class SolicitudServiceMock {
+  async create(createSolicitudDto: CreateSolicitudDto): Promise<Solicitud> { <1>
+    return Promise.resolve({ <2>
+      id: Math.random() * (1000 - 1) + 1,
+      ...createSolicitudDto,
     });
   }
 
-  async update( <3>
+  async update(
     id: number,
-    updateProductDto: UpdateProductDto,
-  ): Promise<Product> {
-    return Promise.resolve({
-      id: id, <4>
-      ...updateProductDto,
-    });
+    updateSolicitudDto: UpdateSolicitudDto,
+  ): Promise<Solicitud> { <3>
+    return Promise.resolve({ <4>
+      id: id,
+      ...updateSolicitudDto,
+    }) as Promise<Solicitud>; <5>
   }
 }
+
 ----
 <1> Método `create` mockeado
-<2> Código traído desde `mockProductService`
+<2> Código traído desde `mockSolicitudService`
 <3> Método `update` mockeado
-<4> Código traído desde `mockProductService`
+<4> Código traído desde `mockSolicitudService`
+<5> Forzamos el casting de la respuesta porque no pueden inferir que el tipo que devolvemos es correcto.
 
-Una vez que disponemos de la clase que mockea el servicio, **haremos los cambios en el archivo de tests del controlador para que use esta clase mockeada en lugar de la variable `mockProductService`**, que es la que contenía la implementación de los mocks. 
+Una vez que disponemos de la clase que mockea el servicio, **haremos los cambios en el archivo de tests del controlador para que use esta clase mockeada en lugar de la variable `mockSolicitudService`**, que es la que contenía la implementación de los mocks. 
 
 [NOTE]
 ====
@@ -1423,8 +2943,8 @@ La inyección de dependencias de NestJS permite que podamos sustituir el servici
 
 Hay que hacer varios cambios:
 
-. Declarar una variable `service` de tipo `ProductService`
-. Definir un `ProductServiceProvider` que mockee el provider `ProductService`
+. Declarar una variable `service` de tipo `SolicitudService`
+. Definir un `SolicitudServiceProvider` que mockee el provider `SolicitudService`
 . Incorporar el `ProductServiceProvider` a la lista de providers del módulo de testing
 . Usar la clase de mock para construir el módulo de testing
 . Inicializar la variable `service` al servicio del producto. Como `ProductService` está mockeado realmente no usará la implementación original
@@ -1435,85 +2955,101 @@ Hay que hacer varios cambios:
 [source, ts]
 ----
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductController } from './product.controller';
-import { ProductService } from './product.service';
-import { ProductServiceMock } from './product-service-mock';
+import { SolicitudController } from './solicitud.controller';
+import { SolicitudService } from './solicitud.service';
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+import { of } from 'rxjs';
+import { SolicitudServiceMock } from './solicitud-service-mock';
 
-describe('ProductController', () => {
-  let controller: ProductController;
-  let service: ProductService; <1>
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+  let service: SolicitudService; <1>
 
   beforeEach(async () => {
-    const ProductServiceProvider = { <2>
-      provide: ProductService,
-      useClass: ProductServiceMock,
+    const SolicitudServiceProvider = { <2>
+      provide: SolicitudService,
+      useClass: SolicitudServiceMock,
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ProductController],
-      providers: [ProductService, ProductServiceProvider], <3>
+      controllers: [SolicitudController],
+      providers: [SolicitudService, SolicitudServiceProvider], <3>
     })
-      .overrideProvider(ProductService)
-      .useClass(ProductServiceMock) <4>
+      .overrideProvider(SolicitudService)
+      .useClass(SolicitudServiceMock) <4>
       .compile();
 
-    controller = module.get<ProductController>(ProductController);
-    service = module.get<ProductService>(ProductService); <5>
+    controller = module.get<SolicitudController>(SolicitudController);
+    service = module.get<SolicitudService>(SolicitudService); <5>
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should create a product', async () => { <6>
-    const createProductDto = {
-      name: 'the-product',
-      brand: 'the-brand',
-      category: 'the-category',
-      price: 10,
-      url: 'http://product.com/the-product',
+  it('should create a solicitud', async () => { <6>
+    const createSolicitudDto: CreateSolicitudDto = {
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
     };
 
-    expect(await controller.create(createProductDto)).toEqual({ <7>
+    expect(await controller.create(createSolicitudDto)).toEqual({ <7>
       id: expect.any(Number),
-      ...createProductDto,
+      ...createSolicitudDto,
     });
   });
 
-  it('should update a product', async () => { <8>
-    const updateProductDto = {
-      name: 'new-product',
-      brand: 'new-brand',
-      category: 'new-category',
-      price: 100,
-      url: 'http://product.com/the-new-product',
+  it('should update a solicitud', async () => { <8>
+    const updateSolicitudDto: UpdateSolicitudDto = {
+      nombre: 'John Smith',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
     };
-    const productId = 2;
+    const solicitudId = 1;
 
-    expect(await controller.update(productId, updateProductDto)).toEqual({ <9>
-      id: productId,
-      ...updateProductDto,
+    expect(await controller.update(solicitudId, updateSolicitudDto)).toEqual({ <9>
+      id: solicitudId,
+      ...updateSolicitudDto,
     });
 
     const updateSpy = jest.spyOn(service, 'update'); <10>
-    controller.update(productId, updateProductDto); <11>
+    controller.update(solicitudId, updateSolicitudDto); <11>
 
-    expect(updateSpy).toHaveBeenCalledWith(productId, updateProductDto); <12>
-    );
+    expect(updateSpy).toHaveBeenCalledWith(solicitudId, updateSolicitudDto); <12>
   });
 });
 ----
 <1> Declaración del servicio
-<2> `ProductServiceProvider` mockea el provider `ProductService`
-<3> Se añade `ProductServiceProvider` como otro provider
+<2> `SolicitudServiceProvider` mockea el provider `SolicitudService`
+<3> Se añade `SolicitudServiceProvider` como otro provider
 <4> Inicialización del mock a la clase del mock del servicio (Inyección de dependencias)
-<5> Inicialización del servicio al servicio del producto, que está mockeado
+<5> Inicialización del servicio al servicio de la solicitud, que está mockeado
 <6> Caso de prueba asíncrono por el `await` en métodos dentrol del caso de prueba
-<7> Probamos que el producto se crea correctamente y devuelve los valores esperados. La ejecución se hace con `await`
+<7> Probamos que la solicitud se crea correctamente y devuelve los valores esperados. La ejecución se hace con `await`
 <8> Caso de prueba asíncrono por el `await` en métodos dentro del caso de prueba
-<9> Probamos que la actualización de un producto se realiza correctamente y devuelve los valores esperados. La ejecución se hace con `await`
+<9> Probamos que la actualización de una solicitud se realiza correctamente y devuelve los valores esperados. La ejecución se hace con `await`
 <10> Crear un espía para el método `update` en `service`
-<11> Hacer una actualización de producto 
+<11> Hacer una actualización de solicitud
 <12> Probamos que el servicio espiado ha sido llamado por el controlador con los parámetros adecuados
 
 .`jest.spyOn()`
@@ -1525,14 +3061,15 @@ describe('ProductController', () => {
 [source, ts]
 ----
 ...
-let service: ProductService; <1>
+let service: SolicitudService; <1>
 ...
-service = module.get<ProductService>(ProductService); <2>
+service = module.get<SolicitudService>(SolicitudService); <2>
 ...
-const updateSpy = jest.spyOn(service, 'update'); <3>
-controller.update(productId, updateProductDto); <4>
-expect(updateSpy).toHaveBeenCalledWith(productId, updateProductDto); <5>
 
+const updateSpy = jest.spyOn(service, 'update'); <3>
+controller.update(solicitudId, updateSolicitudDto); <4>
+
+expect(updateSpy).toHaveBeenCalledWith(solicitudId, updateSolicitudDto); <5>
 ...
 ----
 <1> Declaración de un objeto `service`
