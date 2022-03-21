@@ -48,7 +48,7 @@ Disponibles los repositorios usados en este tutorial.
 
 * https://github.com/ualmtorres/fizzbuzz[Fizz Buzz]
 * https://github.com/ualmtorres/nestjs-espacios/tree/base[Base del caso de uso de la API de gestión de espacios para el tutorial (Rama `base`)]
-* https://github.com/ualmtorres/nestjs-espacios/tree/master[Caso de uso de la API de gestión de espacios para el tutorial (Rama `master`)] (**en curso**)
+* https://github.com/ualmtorres/nestjs-espacios/tree/master[Caso de uso de la API de gestión de espacios para el tutorial (Rama `master`)]
 ====
 
 // Entrar en modo numerado de apartados
@@ -1478,7 +1478,7 @@ Ahora, y de acuerdo con el informe de cobertura de tests, se trataría de ir añ
 
 #### Tercer paso. Llevar el mock del servicio a una clase
 
-Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de `mockSolicitudService` a métodos en una clase nueva.
+Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos cómo refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de `mockSolicitudService` a métodos en una clase nueva.
 
 Partimos del servicio mockeado en la propia clase, que recordamos que tenía esta forma:
 
@@ -2380,7 +2380,7 @@ describe('SolicitudController (e2e)', () => {
 <5> Construcción del módulo para testing
 <6> Test a ejecutar. Comprueba que en la ruta raiz del controlador (`/solicitud`) se devuelve un código de estado HTTP de 200
 
-Tras guardar los cambios vemos que aparece un nuevo error, esta vez relacionado con la autenticación. El error se debe a que los endpoints de los controladores incluyen guardas para proteger el acceso a través de JWT. Para los tests, burlaremos la guarda definida (`AuthGuuard('jwt')`). El archivo de testing ahora quedaría así:
+Tras guardar los cambios vemos que aparece un nuevo error, esta vez relacionado con la autenticación. El error se debe a que los endpoints de los controladores incluyen guardas para proteger el acceso a través de JWT. Para los tests, burlaremos la guarda definida (`AuthGuard('jwt')`). El archivo de testing ahora quedaría así:
 
 [source, ts]
 ----
@@ -2438,6 +2438,650 @@ Watch Usage: Press w to show more.
 ----
 
 Este test se limita a comprobar que en la ruta `/solicitud` se devuelve un código de estado HTTP de 200.
+
+#### Segundo paso. Añadir tests
+
+A continuación añadiremos el resto de tests para el resto de endpoints de solicitudes (recuperar, crear, modificar y eliminar una solicitud). También añadiremos al mock del repositorio el resto de funciones. Sólo teníamos añadida `find`. Aprovecharemos la ocasión para dar una implementación mínima de las funciones de mockeo del repositorio.
+
+Archivo `test/solicitud.e2e-spec.ts`
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { SolicitudModule } from '../src/solicitud/solicitud.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Solicitud } from '../src/solicitud/entities/solicitud.entity';
+import { AuthGuard } from '@nestjs/passport';
+
+describe('SolicitudController (e2e)', () => {
+  let app: INestApplication;
+  const solicitud: Solicitud = { <1>
+    id: 0,
+    nombre: '',
+    cargo: '',
+    unidad: '',
+    telefono: '',
+    email: '',
+    tipo: '',
+    nombreActividad: '',
+    start: undefined,
+    end: undefined,
+    dia: '',
+    horaInicio: '',
+    horaFin: '',
+  };
+  const mockSolicitudRepository = { <2>
+    find: jest.fn((id) => {
+      return Promise.resolve([solicitud]);
+    }),
+    findOne: jest.fn((id) => {
+      return Promise.resolve(solicitud);
+    }),
+    save: jest.fn((id) => {
+      return Promise.resolve(solicitud);
+    }),
+    delete: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [SolicitudModule],
+    })
+      .overrideGuard(AuthGuard('jwt'))
+      .useValue('')
+      .overrideProvider(getRepositoryToken(Solicitud))
+      .useValue(mockSolicitudRepository)
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/solicitud (GET)', async () => {
+    return request(app.getHttpServer()).get('/solicitud').expect(200);
+  });
+
+  it('/solicitud/1 (GET)', async () => { <3>
+    return request(app.getHttpServer()).get('/solicitud/1').expect(200);
+  });
+
+  it('/solicitud (POST)', async () => {
+    return request(app.getHttpServer()).post('/solicitud').expect(201);
+  });
+
+  it('/solicitud/1 (PATCH)', async () => {
+    return request(app.getHttpServer()).patch('/solicitud/1').expect(200);
+  });
+
+  it('/solicitud/1 (DELETE)', async () => {
+    return request(app.getHttpServer()).delete('/solicitud/1').expect(200);
+  });
+});
+----
+<1> Objeto de ejemplo que representa a una solicitud
+<2> Conjunto de funciones para mockeo del repositorio con una implementación mínima
+<3> Nuevos tests para el resto de endpoints
+
+[NOTE]
+====
+A la hora de realizar una implementación mínima de cada función mockeada del repositorio lo haremos de acuerdo con su funcionamiento esperado. Esto va dirigido a devolver el código de estado HTTP correspondiente, devolver los datos de su contrato y demás.
+====
+
+Tras estos cambios, ya tenemos los tests pasando correctamente.
+
+[source, code]
+----
+ PASS  test/solicitud.e2e-spec.ts
+  SolicitudController (e2e)
+    ✓ /solicitud (GET) (188 ms)
+    ✓ /solicitud/1 (GET) (10 ms)
+    ✓ /solicitud (POST) (8 ms)
+    ✓ /solicitud/1 (PATCH) (7 ms)
+    ✓ /solicitud/1 (DELETE) (7 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        4.228 s, estimated 7 s
+Ran all test suites related to changed files.
+----
+
+#### Tercer paso. Llevar el mock del repositorio a una clase
+
+Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos cómo refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de `mockSolicitudRepository` de `test/solicitud.e2e-spec.ts` a métodos en una clase aparte. Recordemos que ya contábamos con una clase `SolicitudRepositoryMock` que habíamos dejado a medias cuando creamos los tests del servicio. Esa es la clase en la que situaremos todos las funciones mockeadas. A continuación se muestra cómo quedaría la clase y el archivo de testing.
+
+Archivo `solicitud/solicitud-repository-mock.ts`
+[source, ts]
+----
+import { Solicitud } from './entities/solicitud.entity';
+export class SolicitudRepositoryMock {
+  mockSolicitud: Solicitud = { <1>
+    id: 1,
+    nombre: 'John Doe',
+    cargo: 'Assistant Professor',
+    unidad: 'Informatics Department',
+    telefono: '1234',
+    email: 'john.doe@gmail.com',
+    tipo: '',
+    nombreActividad: '',
+    start: undefined,
+    end: undefined,
+    dia: '',
+    horaInicio: '',
+    horaFin: '',
+  };
+
+  save(solicitud: Solicitud): Promise<Solicitud> {
+    return Promise.resolve(this.mockSolicitud); <2>
+  }
+
+  findOne(id: number): Promise<Solicitud> {
+    return Promise.resolve(this.mockSolicitud); <3>
+  }
+
+  find(): Promise<Solicitud[]> { <4>
+    return Promise.resolve([this.mockSolicitud]);
+  }
+
+  delete(id: number): Promise<any> { <5>
+    return Promise.resolve();
+  }
+}
+----
+<1> Objeto de solicitud de ejemplo
+<2> Modificación de la implementación para que devuelva la solicitud de ejemplo
+<3> Modificación de la implementación para que devuelva la solicitud de ejemplo
+<4> Función que devuelva un array de solicitudes con la solicitud de ejemplo
+<5> Devolver una promesa. Debería mejorarse su implementación
+
+En el código del archivo de testing se ha eliminado el objeto de ejemplo de solicitud así como el que mockeaba el repositorio, que ahora ha sido sustituido por una clase.
+
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { SolicitudModule } from '../src/solicitud/solicitud.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Solicitud } from '../src/solicitud/entities/solicitud.entity';
+import { AuthGuard } from '@nestjs/passport';
+import { SolicitudRepositoryMock } from '../src/solicitud/solicitud-repository-mock';
+
+describe('SolicitudController (e2e)', () => {
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [SolicitudModule],
+    })
+      .overrideGuard(AuthGuard('jwt'))
+      .useValue('')
+      .overrideProvider(getRepositoryToken(Solicitud))
+      .useClass(SolicitudRepositoryMock) <1>
+      .compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/solicitud (GET)', async () => {
+    return request(app.getHttpServer()).get('/solicitud').expect(200);
+  });
+
+  it('/solicitud/1 (GET)', async () => {
+    return request(app.getHttpServer()).get('/solicitud/1').expect(200);
+  });
+
+  it('/solicitud (POST)', async () => {
+    return request(app.getHttpServer()).post('/solicitud').expect(201);
+  });
+
+  it('/solicitud/1 (PATCH)', async () => {
+    return request(app.getHttpServer()).patch('/solicitud/1').expect(200);
+  });
+
+  it('/solicitud/1 (DELETE)', async () => {
+    return request(app.getHttpServer()).delete('/solicitud/1').expect(200);
+  });
+});
+----
+<1> Uso de la clase que mockea los métodos del repositorio
+
+Tras estos cambios los tests siguen pasando correctamente.
+
+[source, code]
+----
+ PASS  test/solicitud.e2e-spec.ts
+  SolicitudController (e2e)
+    ✓ /solicitud (GET) (188 ms)
+    ✓ /solicitud/1 (GET) (10 ms)
+    ✓ /solicitud (POST) (8 ms)
+    ✓ /solicitud/1 (PATCH) (7 ms)
+    ✓ /solicitud/1 (DELETE) (7 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        4.228 s, estimated 7 s
+Ran all test suites related to changed files.
+----
+
+### Cobertura de tests
+
+Tras la implementación de tests que hemos realizado, tanto los unitarios sobre controladores y servicios, como los de integración, veamos la cobertura de tests que tenemos.
+
+Antes de lanzar el análisis de cobertura configuraremos jest en `package.json` para excluir los archivos de módulo del proceso de análisis de cobertura.
+
+[source, json]
+----
+...
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [".module.ts"], <1>
+    "testEnvironment": "node"
+  }
+...
+----
+<1> Ignorar del proceso de cobertura los archivos cuyo nombre termine en .module.ts
+
+A continuación lanzamos la cobertura de tests:
+
+[source, bash]
+----
+$ npm run test:cov
+----
+
+Si abrimos el informe generado en `coverage/lcov-report/index.html` vemos una cobertura superior al 80%.
+
+image::CoberturaInicialSolicitud.png[]
+
+Si ahora vemos la cobertura del controlador vemos que los métodos que están probados son los de creación y actualización. Sin embargo, los métodos de búsqueda y el de eliminación aún no tienen ningún caso de prueba asociado
+
+image::CoberturaInicialSolicitudController.png[]
+
+### Creación del resto de tests
+
+En esta sección implementaremos el restos de test para búsqueda de una solicitud, búsqueda de todas y eliminación. La forma de proceder sería la misma que hemos seguido a lo largo del tutorial: 
+
+. Para el controlador
+  .. Crear el caso de prueba en el controlador. Al ejecutarlo indicará que no existe método en el servicio.
+  .. Implementar el método en el mock del servicio para que de soporte al test del controlador.
+. Para el servicio
+  .. Crear el caso de prueba en el servicio. 
+  .. Implementar en el repositorio los métodos mockeados para que funcione el servicio
+
+[NOTE]
+====
+Como el repositorio ya lo tenemos mockeado de cuando hicimos los <<Tests end to end>>, ya no habrá que mockear sus funciones y los tests del servicio funcionarán directamente. No darán el fallo de que las funciones del repositorio no están definidas.
+====
+
+Archivo `solicitud/solicitud.controller.spec.ts`
+[source, ts]
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { SolicitudController } from './solicitud.controller';
+import { SolicitudService } from './solicitud.service';
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+import { of } from 'rxjs';
+import { SolicitudServiceMock } from './solicitud-service-mock';
+import { Solicitud } from './entities/solicitud.entity';
+
+describe('SolicitudController', () => {
+  let controller: SolicitudController;
+  let service: SolicitudService;
+  const mockSolicitud: Solicitud = { <1>
+    id: 1,
+    nombre: 'John Doe',
+    cargo: 'Assistant Professor',
+    unidad: 'Informatics Department',
+    telefono: '1234',
+    email: 'john.doe@gmail.com',
+    tipo: '',
+    nombreActividad: '',
+    start: undefined,
+    end: undefined,
+    dia: '',
+    horaInicio: '',
+    horaFin: '',
+  };
+
+  beforeEach(async () => {
+    const SolicitudServiceProvider = {
+      provide: SolicitudService,
+      useClass: SolicitudServiceMock,
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SolicitudController],
+      providers: [SolicitudService, SolicitudServiceProvider],
+    })
+      .overrideProvider(SolicitudService)
+      .useClass(SolicitudServiceMock)
+      .compile();
+
+    controller = module.get<SolicitudController>(SolicitudController);
+    service = module.get<SolicitudService>(SolicitudService);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  it('should create a solicitud', async () => {
+    const createSolicitudDto: CreateSolicitudDto = {
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+
+    expect(await controller.create(createSolicitudDto)).toEqual({
+      id: expect.any(Number),
+      ...createSolicitudDto,
+    });
+  });
+
+  it('should update a solicitud', async () => {
+    const updateSolicitudDto: UpdateSolicitudDto = {
+      nombre: 'John Smith',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+    const solicitudId = 1;
+
+    expect(await controller.update(solicitudId, updateSolicitudDto)).toEqual({
+      id: solicitudId,
+      ...updateSolicitudDto,
+    });
+
+    const updateSpy = jest.spyOn(service, 'update');
+    controller.update(solicitudId, updateSolicitudDto);
+
+    expect(updateSpy).toHaveBeenCalledWith(solicitudId, updateSolicitudDto);
+  });
+
+  it('should find a solicitud', async () => { <2>
+    const solicitudId = 2;
+    expect(await (await controller.findOne(solicitudId)).id).toEqual(
+      solicitudId,
+    );
+  });
+
+  it('should find all solicitudes', async () => { <3>
+    expect(await controller.findAll()).toEqual([mockSolicitud]);
+  });
+
+  it('should delete a solicitud', async () => { <4>
+    expect((await controller.remove(1))['affected']).toEqual(1);
+  });
+});
+----
+<1> Objeto de ejemplo de solicitud
+<2> Test para recuperar una solicitud. Se comprueba que la solicitud recuperada tiene el mismo `id` que se ha buscado
+<3> Test para recuperar todas las solicitudes. Se comprueba que vienen en un array
+<4> En la eliminación se comprueba que devuelve 1 en el campo `affected`
+
+Archivo `solicitud/solicitud-service-mock.ts`
+[source, ts]
+----
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { Solicitud } from './entities/solicitud.entity';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+export class SolicitudServiceMock {
+  mockSolicitud: Solicitud = { <1>
+    id: 1,
+    nombre: 'John Doe',
+    cargo: 'Assistant Professor',
+    unidad: 'Informatics Department',
+    telefono: '1234',
+    email: 'john.doe@gmail.com',
+    tipo: '',
+    nombreActividad: '',
+    start: undefined,
+    end: undefined,
+    dia: '',
+    horaInicio: '',
+    horaFin: '',
+  };
+
+  async create(createSolicitudDto: CreateSolicitudDto): Promise<Solicitud> {
+    return Promise.resolve({
+      id: Math.random() * (1000 - 1) + 1,
+      ...createSolicitudDto,
+    });
+  }
+
+  async update(
+    id: number,
+    updateSolicitudDto: UpdateSolicitudDto,
+  ): Promise<Solicitud> {
+    return Promise.resolve({
+      id: id,
+      ...updateSolicitudDto,
+    }) as Promise<Solicitud>;
+  }
+
+  async findOne(id: number): Promise<Solicitud> { <2>
+    this.mockSolicitud.id = id;
+    return Promise.resolve(this.mockSolicitud);
+  }
+
+  async findAll(): Promise<Solicitud[]> { <3>
+    return Promise.resolve([this.mockSolicitud]);
+  }
+
+  async remove(id: number): Promise<any> { <4>
+    return Promise.resolve({
+      raw: [],
+      affected: 1,
+    });
+  }
+}
+----
+<1> Objeto de solicitud de prueba
+<2> Devolver una solicitud con el `id` proporcionado
+<3> Devolver un array de solicitudes
+<4> Devolver lo que devuelve TypeORM al eliminar un objeto de la base de datos
+
+Si cambiamos el patrón del `watch` a `solicitud.co` para que pase los tests al controlador veremos que los tests pasan correctamente.
+
+[source, code]
+----
+ PASS  src/solicitud/solicitud.controller.spec.ts
+  SolicitudController
+    ✓ should be defined (14 ms)
+    ✓ should create a solicitud (4 ms)
+    ✓ should update a solicitud (5 ms)
+    ✓ should find a solicitud (3 ms)
+    ✓ should find all solicitudes (3 ms)
+    ✓ should delete a solicitud (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        5.208 s, estimated 7 s
+Ran all test suites matching /solicitud.co/i.
+----
+
+A continuación se muestran los tests implementados en el servicio.
+
+Archivo `solicitud/solicitud.service.spec.ts`
+----
+import { Test, TestingModule } from '@nestjs/testing';
+import { SolicitudService } from './solicitud.service';
+import { Solicitud } from './entities/solicitud.entity';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { CreateSolicitudDto } from './dto/create-solicitud.dto';
+import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+import { SolicitudRepositoryMock } from './solicitud-repository-mock';
+
+describe('SolicitudService', () => {
+  let service: SolicitudService;
+  const mockSolicitud: Solicitud = { <1>
+    id: 1,
+    nombre: 'John Doe',
+    cargo: 'Assistant Professor',
+    unidad: 'Informatics Department',
+    telefono: '1234',
+    email: 'john.doe@gmail.com',
+    tipo: '',
+    nombreActividad: '',
+    start: undefined,
+    end: undefined,
+    dia: '',
+    horaInicio: '',
+    horaFin: '',
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SolicitudService,
+        {
+          provide: getRepositoryToken(Solicitud),
+          useClass: SolicitudRepositoryMock,
+        },
+      ],
+    }).compile();
+
+    service = module.get<SolicitudService>(SolicitudService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  it('should create a solicitud', async () => {
+    const createSolicitudDto: CreateSolicitudDto = {
+      nombre: 'John Doe',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+
+    expect(await service.create(createSolicitudDto)).toEqual({
+      id: expect.any(Number),
+      ...createSolicitudDto,
+    });
+  });
+
+  it('should update a solicitud', async () => {
+    const updateSolicitudDto: UpdateSolicitudDto = {
+      nombre: 'John Smith',
+      cargo: 'Assistant Professor',
+      unidad: 'Informatics Department',
+      telefono: '1234',
+      email: 'john.doe@gmail.com',
+      tipo: '',
+      nombreActividad: '',
+      start: undefined,
+      end: undefined,
+      dia: '',
+      horaInicio: '',
+      horaFin: '',
+    };
+    const solicitudId = 1;
+
+    expect(await service.update(solicitudId, updateSolicitudDto)).toEqual({
+      id: solicitudId,
+      ...updateSolicitudDto,
+    });
+  });
+
+  it('should find a solicitud', async () => { <2>
+    const solicitudId = 2;
+    expect(await (await service.findOne(solicitudId)).id).toEqual(solicitudId);
+  });
+
+  it('should find all solicitudes', async () => { <3>
+    expect(await service.findAll()).toEqual([mockSolicitud]);
+  });
+
+  it('should delete a solicitud', async () => { <4>
+    expect(await service.remove(1)).toBeDefined;
+  });
+});
+----
+<1> Objeto de ejemplo de solicitud
+<2> Test para recuperar una solicitud. Se comprueba que la solicitud recuperada tiene el mismo id que se ha buscado
+<3> Test para recuperar todas las solicitudes. Se comprueba que vienen en un array
+<4> En la eliminación se comprueba únicamente que ha sido llamado
+
+[NOTE]
+====
+La implementación del test de eliminación así como su función mockeada en el repositorio son demasiado elementales. Convendría mejorarlas.
+====
+
+Si ahora cambiamos el patrón de archivo el modo `watch` a `solicitud.se` se pasarán los tests al servicio y obtendremos los resultados siguientes.
+
+[source, code]
+----
+ PASS  src/solicitud/solicitud.service.spec.ts
+  SolicitudService
+    ✓ should be defined (13 ms)
+    ✓ should create a solicitud (4 ms)
+    ✓ should update a solicitud (3 ms)
+    ✓ should find a solicitud (2 ms)
+    ✓ should find all solicitudes (3 ms)
+    ✓ should delete a solicitud (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        4.262 s
+Ran all test suites matching /solicitud.se/i.
+----
+
+Si ahora volver a pasar la cobertura de tests con
+
+[source, bash]
+----
+$ npm run test:cov
+----
+
+obtenemos que las solicitudes ya tienen una cobertura del 100%, tal y como muestra la parte inferior de la figura siguiente.
+
+image::Cobertura100Solicitud.png[]
 
 ## Caso de uso. Catálogo de productos
 
@@ -2858,7 +3502,7 @@ Ahora, y de acuerdo con el informe de cobertura de tests, se trataría de ir añ
 
 #### Tercer paso. Llevar el mock del servicio a una clase
 
-Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de `mockSolicitudService` a métodos en una clase nueva.
+Hasta ahora hemos mockeado el servicio en la misma clase de testing. Aquí veremos cómo refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente, se trata de llevar el contenido de los métodos de `mockSolicitudService` a métodos en una clase nueva.
 
 Partimos del servicio mockeado en la propia clase, que recordamos que tenía esta forma:
 
@@ -3332,7 +3976,7 @@ Ahora se trataría de ir añadiendo los tests que faltan (mostrar productos, mos
 
 #### Tercer paso. Llevar el mock del repositorio a una clase
 
-Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos como refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de `mockProductsRepository` a métodos en una clase nueva.
+Hasta ahora hemos mockeado el repositorio en la misma clase de testing. Aquí veremos cómo refactorizar el archivo de testing sacando el mock a una clase aparte. Concretamente se trata de llevar el contenido de los métodos de `mockProductsRepository` a métodos en una clase nueva.
 
 Partimos del repositorio mockeado en la propia clase y tenía esta forma:
 
